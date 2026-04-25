@@ -1,0 +1,152 @@
+/* ══════════════════════════════════════════
+   Room Page
+   ══════════════════════════════════════════ */
+
+.room {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.room-loading {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  color: var(--text-secondary);
+}
+
+.room-loading .spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-primary);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ── Body (Editor + Sidebar) ── */
+.room-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.editor-area {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.empty-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  gap: var(--space-sm);
+  background: var(--bg-primary);
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-primary);
+  overflow-y: auto;
+  animation: slideInRight 200ms ease forwards;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header-mobile {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.sidebar-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.close-sidebar-btn {
+  width: 32px;
+  height: 32px;
+  font-size: 1.1rem;
+}
+
+/* ── Toast Container ── */
+.toast-container {
+  position: fixed;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════
+   Responsive — Tablet (≤1024px)
+   ═══════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 220px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   Responsive — Mobile (≤768px)
+   ═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Sidebar becomes a slide-over drawer */
+  .sidebar {
+    position: fixed;
+    right: 0;
+    top: 48px;
+    bottom: 0;
+    width: 280px;
+    z-index: 50;
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.5);
+    border-left: none;
+  }
+
+  .sidebar-header-mobile {
+    display: flex;
+  }
+
+  /* Toast moves to top-center on mobile for better thumb reach */
+  .toast-container {
+    bottom: auto;
+    top: 56px;
+    right: 50%;
+    transform: translateX(50%);
+    left: auto;
+    width: 90%;
+    max-width: 360px;
+    align-items: stretch;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   Responsive — Small Mobile (≤480px)
+   ═══════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .sidebar {
+    width: 100%;
+    max-width: none;
+  }
+}

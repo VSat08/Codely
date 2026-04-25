@@ -1,0 +1,263 @@
+/* ══════════════════════════════════════════
+   Toolbar
+   ══════════════════════════════════════════ */
+
+.toolbar {
+  height: 48px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-md);
+  gap: var(--space-sm);
+  flex-shrink: 0;
+  z-index: 40;
+}
+
+/* ── Left ── */
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+  flex: 1;
+}
+
+.toolbar-logo {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.toolbar-logo:hover {
+  opacity: 0.8;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-primary);
+  flex-shrink: 0;
+}
+
+.room-id-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.room-id {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rename-inline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rename-inline input {
+  width: 140px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+}
+
+/* ── Center ── */
+.toolbar-center {
+  flex-shrink: 0;
+}
+
+.language-select {
+  width: 140px;
+  padding: 6px 30px 6px 10px;
+  font-size: 0.82rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+}
+
+/* ── Right ── */
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.btn-icon.active {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.user-count {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.user-count-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.conn-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-left: var(--space-xs);
+}
+
+.conn-indicator.on {
+  background: var(--success);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+}
+
+.conn-indicator.off {
+  background: var(--danger);
+  animation: pulse 1.5s ease infinite;
+}
+
+/* ── Dropdown ── */
+.menu-wrapper {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  min-width: 170px;
+  overflow: hidden;
+  z-index: 100;
+  animation: fadeIn 150ms ease;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  text-align: left;
+  transition: background var(--transition-fast);
+}
+
+.dropdown-item:hover {
+  background: var(--bg-hover);
+}
+
+.dropdown-item-danger {
+  color: var(--danger);
+}
+
+.dropdown-item-danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* ═══════════════════════════════════════════
+   Responsive — Tablet (≤768px)
+   ═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .toolbar {
+    height: 44px;
+    padding: 0 var(--space-sm);
+    gap: 4px;
+  }
+
+  .toolbar-logo {
+    font-size: 0.85rem;
+  }
+
+  .toolbar-divider {
+    display: none;
+  }
+
+  .language-select {
+    width: 110px;
+    font-size: 0.78rem;
+    padding: 5px 26px 5px 8px;
+  }
+
+  .room-id {
+    max-width: 120px;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+  }
+
+  .btn-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.95rem;
+  }
+
+  .user-count {
+    padding: 3px 8px;
+    font-size: 0.75rem;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   Responsive — Small Mobile (≤480px)
+   ═══════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .toolbar-logo {
+    display: none;
+  }
+
+  .language-select {
+    width: 90px;
+  }
+
+  .room-id {
+    max-width: 80px;
+    font-size: 0.7rem;
+  }
+
+  /* Hide user count text, keep just the dot */
+  .user-count {
+    padding: 3px 6px;
+    font-size: 0;
+  }
+
+  .user-count-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .conn-indicator {
+    display: none;
+  }
+
+  .rename-inline input {
+    width: 100px;
+  }
+}
