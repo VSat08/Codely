@@ -3,7 +3,7 @@ services:
     name: codely
     runtime: node
     plan: free
-    buildCommand: npm install && npm --prefix client install && npm --prefix server install && npm run build
+    buildCommand: npm install && npm --prefix client install --include=dev && npm --prefix server install && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
