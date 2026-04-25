@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: codely-workspace
+    name: codely-dev
     runtime: node
     plan: free
     buildCommand: npm install && npm --prefix client install --include=dev && npm --prefix server install && npm run build

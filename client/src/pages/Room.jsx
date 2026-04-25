@@ -7,6 +7,7 @@ import TabsBar from '../components/TabsBar';
 import UserPresence from '../components/UserPresence';
 import ImagePanel from '../components/ImagePanel';
 import ImageLightbox from '../components/ImageLightbox';
+import LineRangeModal from '../components/LineRangeModal';
 import Toast from '../components/Toast';
 import { useState, useCallback } from 'react';
 import './Room.css';
@@ -19,6 +20,7 @@ function Room() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showImagePanel, setShowImagePanel] = useState(false);
   const [lightboxImage, setLightboxImage] = useState(null);
+  const [showLineRange, setShowLineRange] = useState(false);
   const [toasts, setToasts] = useState([]);
 
   const addToast = useCallback((message, type = 'info') => {
@@ -72,6 +74,9 @@ function Room() {
         onDeleteRoom={room.handleDeleteRoom}
         addToast={addToast}
         userCount={Object.keys(room.users).length}
+        activeTab={room.activeTab}
+        tabs={room.tabs}
+        onOpenLineRange={() => setShowLineRange(true)}
       />
 
       {/* Main Area */}
@@ -140,6 +145,16 @@ function Room() {
         <ImageLightbox
           image={lightboxImage}
           onClose={() => setLightboxImage(null)}
+        />
+      )}
+
+      {/* Line Range Modal */}
+      {showLineRange && room.activeTab && (
+        <LineRangeModal
+          code={room.activeTab.code}
+          fileName={room.activeTab.name}
+          onClose={() => setShowLineRange(false)}
+          addToast={addToast}
         />
       )}
 

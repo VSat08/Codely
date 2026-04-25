@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { LANGUAGES } from '../utils/constants';
+import { useState, useRef, useEffect } from 'react';
+import { LANGUAGES, getExtensionForLanguage } from '../utils/constants';
+import JSZip from 'jszip';
 import './Toolbar.css';
 
 /**
@@ -19,10 +20,68 @@ function Toolbar({
   onDeleteRoom,
   addToast,
   userCount,
+  activeTab,
+  tabs,
+  onOpenLineRange,
 }) {
   const [showMenu, setShowMenu] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [newRoomId, setNewRoomId] = useState('');
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!showMenu) return;
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMenu]);
+
+  const handleCopyCode = () => {
+    if (!activeTab?.code) {
+      addToast('No code to copy', 'error');
+      return;
+    }
+    navigator.clipboard.writeText(activeTab.code);
+    addToast('Code copied to clipboard!', 'success');
+  };
+
+  const handleDownloadFile = () => {
+    if (!activeTab) {
+      addToast('No file to download', 'error');
+      return;
+    }
+    const blob = new Blob([activeTab.code || ''], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = activeTab.name || 'untitled.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+    addToast(`Downloaded ${activeTab.name}`, 'success');
+  };
+
+  const handleDownloadAll = async () => {
+    if (!tabs || Object.keys(tabs).length === 0) {
+      addToast('No files to download', 'error');
+      return;
+    }
+    const zip = new JSZip();
+    Object.values(tabs).forEach((tab) => {
+      zip.file(tab.name || 'untitled.txt', tab.code || '');
+    });
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${roomId}-code.zip`;
+    a.click();
+    URL.revokeObjectURL(url);
+    addToast('Downloaded all files as ZIP', 'success');
+  };
 
   const handleRename = async () => {
     if (!newRoomId.trim()) return;
@@ -113,6 +172,14 @@ function Toolbar({
         </div>
 
         <button
+          className="btn btn-icon btn-ghost"
+          onClick={handleCopyCode}
+          title="Copy code"
+        >
+          <span className="material-symbols-outlined" style={{fontSize: '20px'}}>content_paste</span>
+        </button>
+
+        <button
           className={`btn btn-icon btn-ghost ${showImagePanel ? 'active' : ''}`}
           onClick={onToggleImages}
           title="Toggle screenshots"
@@ -129,16 +196,42 @@ function Toolbar({
         </button>
 
         {/* More Menu */}
-        <div className="menu-wrapper">
+        <div className="menu-wrapper" ref={menuRef}>
           <button
             className="btn btn-icon btn-ghost"
             onClick={() => setShowMenu(!showMenu)}
             title="Room settings"
           >
-            <span className="material-symbols-outlined" style={{fontSize: '20px'}}>settings</span>
+            <span className="material-symbols-outlined" style={{fontSize: '20px'}}>more_vert</span>
           </button>
           {showMenu && (
             <div className="dropdown-menu">
+              <button
+                className="dropdown-item"
+                onClick={() => { handleCopyCode(); setShowMenu(false); }}
+              >
+                <span className="material-symbols-outlined" style={{fontSize: '18px'}}>content_copy</span> Copy Code
+              </button>
+              <button
+                className="dropdown-item"
+                onClick={() => { onOpenLineRange(); setShowMenu(false); }}
+              >
+                <span className="material-symbols-outlined" style={{fontSize: '18px'}}>select_all</span> Copy Lines...
+              </button>
+              <div className="dropdown-divider" />
+              <button
+                className="dropdown-item"
+                onClick={() => { handleDownloadFile(); setShowMenu(false); }}
+              >
+                <span className="material-symbols-outlined" style={{fontSize: '18px'}}>download</span> Download File
+              </button>
+              <button
+                className="dropdown-item"
+                onClick={() => { handleDownloadAll(); setShowMenu(false); }}
+              >
+                <span className="material-symbols-outlined" style={{fontSize: '18px'}}>folder_zip</span> Download All (ZIP)
+              </button>
+              <div className="dropdown-divider" />
               <button
                 className="dropdown-item"
                 onClick={() => { setRenaming(true); setShowMenu(false); }}
