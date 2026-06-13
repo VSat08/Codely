@@ -9,7 +9,13 @@ import ImagePanel from '../components/ImagePanel';
 import ImageLightbox from '../components/ImageLightbox';
 import LineRangeModal from '../components/LineRangeModal';
 import Toast from '../components/Toast';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useAIChat } from '../hooks/useAIChat';
+import { AIChatPanel } from '../components/AIChatPanel';
+import FilePanel from '../components/FilePanel';
+import KeyboardShortcutsModal from '../components/KeyboardShortcutsModal';
+import ThemeModal from '../components/ThemeModal';
+import { getExtensionForLanguage } from '../utils/constants';
 import './Room.css';
 
 function Room() {
@@ -19,9 +25,18 @@ function Room() {
 
   const [showSidebar, setShowSidebar] = useState(false);
   const [showImagePanel, setShowImagePanel] = useState(false);
+  const [showFilePanel, setShowFilePanel] = useState(false);
+  const [showAIPanel, setShowAIPanel] = useState(false);
   const [lightboxImage, setLightboxImage] = useState(null);
   const [showLineRange, setShowLineRange] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showThemeModal, setShowThemeModal] = useState(false);
+  const [editorTheme, setEditorTheme] = useState(
+    localStorage.getItem('codely-editor-theme') || 'vs-dark'
+  );
   const [toasts, setToasts] = useState([]);
+
+  const aiChat = useAIChat(socket, roomId, room.currentUser?.name);
 
   const addToast = useCallback((message, type = 'info') => {
     const id = Date.now();
@@ -48,6 +63,89 @@ function Room() {
     }
   };
 
+  const handleThemeChange = (newTheme) => {
+    setEditorTheme(newTheme);
+    localStorage.setItem('codely-editor-theme', newTheme);
+    addToast('Theme applied', 'success');
+  };
+
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = async (e) => {
+      // We no longer block shortcuts in inputs/textareas so they work in the editor!
+
+      if (e.altKey) {
+        switch (e.key.toLowerCase()) {
+          case 'n': // New Tab
+            e.preventDefault();
+            try {
+              const defaultName = `Untitled-${Object.keys(room.tabs).length + 1}.${getExtensionForLanguage('javascript')}`;
+              const newTab = await room.handleAddTab(defaultName, 'javascript');
+              room.setActiveTabId(newTab.id);
+            } catch (err) {
+              addToast('Failed to create tab', 'error');
+            }
+            break;
+          case 'w': // Close Tab
+            e.preventDefault();
+            if (e.shiftKey) {
+              // Close all (keep one to prevent empty state error on backend)
+              const tabIds = Object.keys(room.tabs);
+              if (tabIds.length > 1) {
+                // Delete all except active (or first)
+                const keepId = room.activeTabId || tabIds[0];
+                for (const id of tabIds) {
+                  if (id !== keepId) {
+                    room.handleDeleteTab(id).catch(() => {});
+                  }
+                }
+                addToast('Closed other tabs', 'info');
+              }
+            } else if (room.activeTabId && Object.keys(room.tabs).length > 1) {
+              // Close current
+              room.handleDeleteTab(room.activeTabId).catch(() => addToast('Failed to close tab', 'error'));
+            }
+            break;
+          case 'r': // Rename Room
+            e.preventDefault();
+            window.dispatchEvent(new Event('trigger-rename-room'));
+            break;
+          case 'e': // Rename Tab
+            e.preventDefault();
+            window.dispatchEvent(new Event('trigger-rename-tab'));
+            break;
+          case '1': // Toggle Users
+            e.preventDefault();
+            setShowSidebar(prev => !prev);
+            break;
+          case '2': // Toggle Images
+            e.preventDefault();
+            setShowImagePanel(prev => !prev);
+            break;
+          case '3': // Toggle Files
+            e.preventDefault();
+            setShowFilePanel(prev => !prev);
+            break;
+          case '4': // Toggle AI
+            e.preventDefault();
+            setShowAIPanel(prev => !prev);
+            break;
+          case 't': // Toggle Theme
+            e.preventDefault();
+            setShowThemeModal(prev => !prev);
+            break;
+          case '/': // Show Shortcuts
+            e.preventDefault();
+            setShowShortcuts(true);
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [room, addToast]);
+
   if (!room.isJoined) {
     return (
       <div className="room-loading">
@@ -67,8 +165,12 @@ function Room() {
         onCopyLink={handleCopyLink}
         onToggleSidebar={() => setShowSidebar(!showSidebar)}
         onToggleImages={() => setShowImagePanel(!showImagePanel)}
+        onToggleFiles={() => setShowFilePanel(!showFilePanel)}
+        onToggleAI={() => setShowAIPanel(!showAIPanel)}
         showSidebar={showSidebar}
         showImagePanel={showImagePanel}
+        showFilePanel={showFilePanel}
+        showAIPanel={showAIPanel}
         isConnected={isConnected}
         onRenameRoom={room.handleRenameRoom}
         onDeleteRoom={room.handleDeleteRoom}
@@ -77,6 +179,8 @@ function Room() {
         activeTab={room.activeTab}
         tabs={room.tabs}
         onOpenLineRange={() => setShowLineRange(true)}
+        onOpenShortcuts={() => setShowShortcuts(true)}
+        onOpenThemeModal={() => setShowThemeModal(true)}
       />
 
       {/* Main Area */}
@@ -97,6 +201,7 @@ function Room() {
               language={room.activeTab.language}
               onChange={handleCodeChange}
               isRemoteChange={room.isRemoteChange}
+              theme={editorTheme}
             />
           ) : (
             <div className="empty-editor">
@@ -105,6 +210,16 @@ function Room() {
             </div>
           )}
         </div>
+
+        {showAIPanel && (
+          <AIChatPanel
+            aiChat={aiChat}
+            activeTab={room.activeTabId}
+            tabs={room.tabs}
+            onClose={() => setShowAIPanel(false)}
+            addToast={addToast}
+          />
+        )}
 
         {/* Sidebar */}
         {showSidebar && (
@@ -140,6 +255,16 @@ function Room() {
         />
       )}
 
+      {/* File Panel */}
+      {showFilePanel && (
+        <FilePanel
+          files={room.files}
+          onFileShare={room.handleFileShare}
+          onFileDelete={room.handleFileDelete}
+          addToast={addToast}
+        />
+      )}
+
       {/* Lightbox */}
       {lightboxImage && (
         <ImageLightbox
@@ -155,6 +280,20 @@ function Room() {
           fileName={room.activeTab.name}
           onClose={() => setShowLineRange(false)}
           addToast={addToast}
+        />
+      )}
+
+      {/* Keyboard Shortcuts Modal */}
+      {showShortcuts && (
+        <KeyboardShortcutsModal onClose={() => setShowShortcuts(false)} />
+      )}
+
+      {/* Theme Modal */}
+      {showThemeModal && (
+        <ThemeModal 
+          currentTheme={editorTheme}
+          onSelectTheme={handleThemeChange}
+          onClose={() => setShowThemeModal(false)}
         />
       )}
 

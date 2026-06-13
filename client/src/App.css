@@ -32,9 +32,16 @@
   --accent-subtle: rgba(59, 130, 246, 0.15);
 
   --success: #10B981;
+  --success-subtle: rgba(16, 185, 129, 0.08);
+  --success-border: rgba(16, 185, 129, 0.15);
   --warning: #F59E0B;
   --danger: #EF4444;
   --info: #06B6D4;
+
+  /* AI Brand Colors */
+  --brand-google: #4285F4;
+  --brand-openai: #10A37F;
+  --brand-claude: #D97757;
 
   /* Typography */
   --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;

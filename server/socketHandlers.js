@@ -164,6 +164,42 @@ function setupSocketHandlers(io) {
       io.to(currentRoom).emit('image-removed', { imageId });
     });
 
+    // ── File Share ──
+    socket.on('file-share', (data, callback) => {
+      if (!currentRoom) return callback({ error: 'Not in a room' });
+
+      const { fileData, name, size, uploadedBy } = data;
+
+      // Validate size (~2MB in base64 ≈ 2.67M chars)
+      if (fileData && fileData.length > 2.67 * 1024 * 1024) {
+        return callback({ error: 'File too large. Max 2MB.' });
+      }
+
+      const file = {
+        id: roomStore.generateId(8),
+        data: fileData,
+        name: name || 'document',
+        size: size || 0,
+        uploadedBy: uploadedBy || 'Anonymous',
+        timestamp: Date.now(),
+      };
+
+      const success = roomStore.addFile(currentRoom, file);
+      if (!success) {
+        return callback({ error: 'Room file limit reached (max 10).' });
+      }
+
+      callback({ success: true, fileId: file.id });
+      io.to(currentRoom).emit('file-added', { file });
+    });
+
+    // ── File Delete ──
+    socket.on('file-delete', ({ fileId }) => {
+      if (!currentRoom) return;
+      roomStore.removeFile(currentRoom, fileId);
+      io.to(currentRoom).emit('file-removed', { fileId });
+    });
+
     // ── Rename Room ──
     socket.on('rename-room', ({ newId }, callback) => {
       if (!currentRoom) return callback?.({ error: 'Not in a room' });

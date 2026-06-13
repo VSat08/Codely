@@ -28,6 +28,17 @@ export const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
 export const MAX_IMAGES_PER_ROOM = 10;
 export const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 
+export const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+export const MAX_FILES_PER_ROOM = 10;
+export const ACCEPTED_FILE_EXTENSIONS = [
+  '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.csv',
+  '.txt', '.log', '.md', '.json', '.xml', '.yaml', '.yml',
+  '.zip', '.tar', '.gz', '.env', '.toml', '.ini', '.cfg',
+  '.py', '.js', '.ts', '.jsx', '.tsx', '.java', '.c', '.cpp',
+  '.go', '.rs', '.rb', '.php', '.swift', '.kt', '.dart', '.sh',
+  '.html', '.css', '.scss', '.sql', '.dockerfile',
+];
+
 export function getExtensionForLanguage(language) {
   const map = {
     javascript: 'js', typescript: 'ts', python: 'py', html: 'html',

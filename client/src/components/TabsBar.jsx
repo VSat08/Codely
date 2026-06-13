@@ -14,6 +14,17 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
     }
   }, [editingTabId]);
 
+  useEffect(() => {
+    const handleTriggerRename = () => {
+      if (activeTabId && tabs[activeTabId]) {
+        setEditingTabId(activeTabId);
+        setEditName(tabs[activeTabId].name);
+      }
+    };
+    window.addEventListener('trigger-rename-tab', handleTriggerRename);
+    return () => window.removeEventListener('trigger-rename-tab', handleTriggerRename);
+  }, [activeTabId, tabs]);
+
   const handleStartEdit = (tab, e) => {
     e.stopPropagation();
     setEditingTabId(tab.id);

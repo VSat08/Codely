@@ -82,6 +82,12 @@
   flex-shrink: 0;
 }
 
+.language-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .language-select {
   width: 140px;
   padding: 6px 30px 6px 10px;
@@ -89,6 +95,19 @@
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-sm);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.language-select-icon {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+  color: var(--text-secondary);
+  font-size: 18px;
 }
 
 /* ── Right ── */

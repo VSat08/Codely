@@ -13,8 +13,12 @@ function Toolbar({
   onCopyLink,
   onToggleSidebar,
   onToggleImages,
+  onToggleFiles,
+  onToggleAI,
   showSidebar,
   showImagePanel,
+  showFilePanel,
+  showAIPanel,
   isConnected,
   onRenameRoom,
   onDeleteRoom,
@@ -23,11 +27,18 @@ function Toolbar({
   activeTab,
   tabs,
   onOpenLineRange,
+  onOpenShortcuts,
+  onOpenThemeModal,
 }) {
   const [showMenu, setShowMenu] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [newRoomId, setNewRoomId] = useState('');
   const menuRef = useRef(null);
+  const langMenuRef = useRef(null);
+
+  const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const altKey = isMac ? 'Option' : 'Alt';
 
   useEffect(() => {
     if (!showMenu) return;
@@ -35,10 +46,20 @@ function Toolbar({
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setShowMenu(false);
       }
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target)) {
+        setShowLangMenu(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showMenu]);
+  }, [showMenu, showLangMenu]);
+
+  // Listen for global rename event from keyboard shortcuts
+  useEffect(() => {
+    const handleTriggerRename = () => setRenaming(true);
+    window.addEventListener('trigger-rename-room', handleTriggerRename);
+    return () => window.removeEventListener('trigger-rename-room', handleTriggerRename);
+  }, []);
 
   const handleCopyCode = () => {
     if (!activeTab?.code) {
@@ -150,18 +171,33 @@ function Toolbar({
 
       {/* Center: Language */}
       <div className="toolbar-center">
-        <select
-          className="language-select"
-          value={language}
-          onChange={(e) => onLanguageChange(e.target.value)}
-          id="language-selector"
-        >
-          {LANGUAGES.map((lang) => (
-            <option key={lang.value} value={lang.value}>
-              {lang.label}
-            </option>
-          ))}
-        </select>
+        <div className="language-select-wrapper" ref={langMenuRef} style={{ position: 'relative' }}>
+          <button
+            className="language-select"
+            onClick={() => setShowLangMenu(!showLangMenu)}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+          >
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {LANGUAGES.find(l => l.value === language)?.label || 'JavaScript'}
+            </span>
+            <span className="material-symbols-outlined language-select-icon" style={{ position: 'static', right: 'auto' }}>expand_more</span>
+          </button>
+          
+          {showLangMenu && (
+            <div className="dropdown-menu" style={{ top: 'calc(100% + 4px)', left: '50%', transform: 'translateX(-50%)', minWidth: '160px', maxHeight: '400px', overflowY: 'auto' }}>
+              {LANGUAGES.map((lang) => (
+                <button
+                  key={lang.value}
+                  className={`dropdown-item ${language === lang.value ? 'active' : ''}`}
+                  onClick={() => { onLanguageChange(lang.value); setShowLangMenu(false); }}
+                  style={{ display: 'flex', width: '100%' }}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Right: Actions */}
@@ -182,15 +218,31 @@ function Toolbar({
         <button
           className={`btn btn-icon btn-ghost ${showImagePanel ? 'active' : ''}`}
           onClick={onToggleImages}
-          title="Toggle screenshots"
+          title={`Toggle Screenshots (${altKey} + 2)`}
         >
           <span className="material-symbols-outlined" style={{fontSize: '20px'}}>image</span>
         </button>
 
         <button
+          className={`btn btn-icon btn-ghost ${showFilePanel ? 'active' : ''}`}
+          onClick={onToggleFiles}
+          title={`Toggle Files (${altKey} + 3)`}
+        >
+          <span className="material-symbols-outlined" style={{fontSize: '20px'}}>attach_file</span>
+        </button>
+
+        <button
+          className={`btn btn-icon btn-ghost ${showAIPanel ? 'active' : ''}`}
+          onClick={onToggleAI}
+          title={`Toggle AI Assistant (${altKey} + 4)`}
+        >
+          <span className="material-symbols-outlined" style={{fontSize: '20px'}}>smart_toy</span>
+        </button>
+
+        <button
           className={`btn btn-icon btn-ghost ${showSidebar ? 'active' : ''}`}
           onClick={onToggleSidebar}
-          title="Toggle sidebar"
+          title={`Toggle Users Sidebar (${altKey} + 1)`}
         >
           <span className="material-symbols-outlined" style={{fontSize: '20px'}}>group</span>
         </button>
@@ -230,6 +282,19 @@ function Toolbar({
                 onClick={() => { handleDownloadAll(); setShowMenu(false); }}
               >
                 <span className="material-symbols-outlined" style={{fontSize: '18px'}}>folder_zip</span> Download All (ZIP)
+              </button>
+              <div className="dropdown-divider" />
+              <button
+                className="dropdown-item"
+                onClick={() => { onOpenThemeModal(); setShowMenu(false); }}
+              >
+                <span className="material-symbols-outlined" style={{fontSize: '18px'}}>palette</span> Color Theme
+              </button>
+              <button
+                className="dropdown-item"
+                onClick={() => { onOpenShortcuts(); setShowMenu(false); }}
+              >
+                <span className="material-symbols-outlined" style={{fontSize: '18px'}}>keyboard</span> Keyboard Shortcuts
               </button>
               <div className="dropdown-divider" />
               <button

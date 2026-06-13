@@ -25,6 +25,7 @@ function createRoom(id, defaultLanguage = 'javascript') {
       }
     },
     images: [],
+    files: [],
     users: new Map(),
     lastActivity: Date.now(),
     createdAt: Date.now(),
@@ -123,6 +124,24 @@ function removeImage(roomId, imageId) {
   }
 }
 
+// ── File Management ──
+
+function addFile(roomId, file) {
+  const room = rooms.get(roomId);
+  if (!room || room.files.length >= 10) return false;
+  room.files.push(file);
+  room.lastActivity = Date.now();
+  return true;
+}
+
+function removeFile(roomId, fileId) {
+  const room = rooms.get(roomId);
+  if (room) {
+    room.files = room.files.filter((f) => f.id !== fileId);
+    room.lastActivity = Date.now();
+  }
+}
+
 function addUser(roomId, socketId, user) {
   const room = rooms.get(roomId);
   if (room) {
@@ -165,6 +184,7 @@ function getRoomState(roomId) {
     id: room.id,
     tabs: room.tabs,
     images: room.images,
+    files: room.files || [],
     users: usersObj,
   };
 }
@@ -182,6 +202,8 @@ module.exports = {
   updateTabLanguage,
   addImage,
   removeImage,
+  addFile,
+  removeFile,
   addUser,
   removeUser,
   renameRoom,

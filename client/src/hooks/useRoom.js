@@ -10,6 +10,7 @@ export function useRoom(socket, roomId) {
   
   const [users, setUsers] = useState({});
   const [images, setImages] = useState([]);
+  const [files, setFiles] = useState([]);
   const [isJoined, setIsJoined] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -56,6 +57,7 @@ export function useRoom(socket, roomId) {
         if (tabIds.length > 0) setActiveTabId(tabIds[0]);
         
         setImages(state.images || []);
+        setFiles(state.files || []);
         setUsers(state.users || {});
       }
       setCurrentUser(user);
@@ -136,6 +138,17 @@ export function useRoom(socket, roomId) {
       navigate('/');
     };
 
+    const onFileAdded = ({ file }) => {
+      setFiles((prev) => {
+        if (prev.some((f) => f.id === file.id)) return prev;
+        return [...prev, file];
+      });
+    };
+
+    const onFileRemoved = ({ fileId }) => {
+      setFiles((prev) => prev.filter((f) => f.id !== fileId));
+    };
+
     socket.on('tab-added', onTabAdded);
     socket.on('tab-deleted', onTabDeleted);
     socket.on('tab-renamed', onTabRenamed);
@@ -148,6 +161,8 @@ export function useRoom(socket, roomId) {
     socket.on('image-removed', onImageRemoved);
     socket.on('room-renamed', onRoomRenamed);
     socket.on('room-deleted', onRoomDeleted);
+    socket.on('file-added', onFileAdded);
+    socket.on('file-removed', onFileRemoved);
 
     return () => {
       socket.off('tab-added', onTabAdded);
@@ -162,6 +177,8 @@ export function useRoom(socket, roomId) {
       socket.off('image-removed', onImageRemoved);
       socket.off('room-renamed', onRoomRenamed);
       socket.off('room-deleted', onRoomDeleted);
+      socket.off('file-added', onFileAdded);
+      socket.off('file-removed', onFileRemoved);
     };
   }, [socket, roomId, getUserIdentity]);
 
@@ -264,6 +281,31 @@ export function useRoom(socket, roomId) {
     [socket]
   );
 
+  const handleFileShare = useCallback(
+    (fileData, fileName, fileSize) => {
+      return new Promise((resolve, reject) => {
+        if (!socket) return reject('Not connected');
+        const { userName } = getUserIdentity();
+        socket.emit(
+          'file-share',
+          { fileData, name: fileName, size: fileSize, uploadedBy: userName },
+          (res) => {
+            if (res.error) reject(res.error);
+            else resolve(res);
+          }
+        );
+      });
+    },
+    [socket, getUserIdentity]
+  );
+
+  const handleFileDelete = useCallback(
+    (fileId) => {
+      if (socket) socket.emit('file-delete', { fileId });
+    },
+    [socket]
+  );
+
   const handleRenameUser = useCallback(
     (newName) => {
       localStorage.setItem('codely-user-name', newName);
@@ -304,6 +346,7 @@ export function useRoom(socket, roomId) {
     setActiveTabId,
     users,
     images,
+    files,
     isJoined,
     currentUser,
     isRemoteChange: activeTabId ? !!remoteChanges.current[activeTabId] : false,
@@ -314,6 +357,8 @@ export function useRoom(socket, roomId) {
     handleRenameTab,
     handleImageShare,
     handleImageDelete,
+    handleFileShare,
+    handleFileDelete,
     handleRenameUser,
     handleRenameRoom,
     handleDeleteRoom,
