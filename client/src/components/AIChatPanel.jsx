@@ -53,10 +53,20 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
   const imageInputRef = useRef(null);
   const docInputRef = useRef(null);
   const dragCounter = useRef(0);
+  const chatContainerRef = useRef(null);
+  const isUserScrolledUp = useRef(false);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!isUserScrolledUp.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
+
+  const handleScroll = () => {
+    if (!chatContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    isUserScrolledUp.current = scrollHeight - scrollTop - clientHeight > 50;
+  };
 
   // Auto-resize textarea
   useEffect(() => {
@@ -104,6 +114,7 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
 
   const handleSend = () => {
     if (!input.trim() || isStreaming) return;
+    isUserScrolledUp.current = false;
     const result = sendMessage(input);
     if (result?.error) {
       addToast(result.error, 'error');
@@ -134,6 +145,7 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
   };
 
   const handleSuggestionClick = (text) => {
+    isUserScrolledUp.current = false;
     let currentFiles = [...attachedFiles];
     // Auto-attach current file for context if not already attached
     if (activeTab && !attachedFiles.some(f => f.fileName === tabs[activeTab]?.name)) {
@@ -303,7 +315,7 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
         </div>
       </div>
 
-      <div className="ai-chat-messages">
+      <div className="ai-chat-messages" ref={chatContainerRef} onScroll={handleScroll}>
         {messages.length === 0 ? (
           <div className="ai-empty-state">
             <div className="ai-empty-icon">

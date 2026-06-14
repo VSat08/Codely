@@ -112,21 +112,17 @@
    Responsive — Mobile (≤768px)
    ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
-  /* Account for floating bottom action bar */
-  .room {
-    padding-bottom: 56px;
-  }
-
   /* Sidebar becomes a slide-over drawer */
   .sidebar {
     position: fixed;
     right: 0;
     top: 48px;
-    bottom: 56px; /* Stop above the bottom bar */
+    bottom: 88px; /* Stop above the floating pill */
     width: 280px;
     z-index: 50;
     box-shadow: -8px 0 24px rgba(0, 0, 0, 0.5);
     border-left: none;
+    border-bottom-left-radius: 16px; /* Rounded corner since it's floating above the bottom edge */
   }
 
   .sidebar-header-mobile {
@@ -135,7 +131,7 @@
 
   /* Toast sits above the floating bottom bar */
   .toast-container {
-    bottom: 68px;
+    bottom: 100px;
     top: auto;
     right: 50%;
     transform: translateX(50%);

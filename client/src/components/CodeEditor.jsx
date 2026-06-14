@@ -34,7 +34,7 @@ function CodeEditor({ code, language, onChange, isRemoteChange, theme }) {
       cursorBlinking: 'smooth',
       cursorSmoothCaretAnimation: 'on',
       smoothScrolling: true,
-      padding: { top: 16 },
+      padding: { top: 16, bottom: window.innerWidth <= 768 ? 88 : 16 },
       wordWrap: 'on',
       tabSize: 2,
       automaticLayout: true,

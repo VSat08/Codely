@@ -10,58 +10,92 @@ const getInitials = (name) => {
   if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
+// Custom renderer for code blocks to correctly differentiate inline vs block
+const CodeBlockRenderer = ({ node, className, children, ...props }) => {
+  const [copied, setCopied] = React.useState(false);
+  const match = /language-(\w+)/.exec(className || '');
+  const code = String(children).replace(/\n$/, '');
+
+  // In react-markdown v10, the `inline` prop was removed.
+  // We treat it as a block if it specifies a language OR contains newlines.
+  const isBlock = match || code.includes('\n');
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1000);
+  };
+
+  if (isBlock) {
+    const lang = match ? match[1] : 'text';
+    return (
+      <div className="code-block-container">
+        <div className="code-block-header">
+          <span className="code-block-lang">{lang}</span>
+          <div className="code-block-actions">
+            <button
+              className="btn btn-icon btn-ghost btn-small"
+              title={copied ? "Copied!" : "Copy Code"}
+              onClick={handleCopy}
+            >
+              <span 
+                className="material-symbols-outlined" 
+                style={{ 
+                  fontSize: '16px',
+                  color: copied ? 'var(--success, #10b981)' : 'inherit',
+                  transition: 'color 0.2s ease'
+                }}
+              >
+                {copied ? 'check' : 'content_copy'}
+              </span>
+            </button>
+          </div>
+        </div>
+        <SyntaxHighlighter
+          style={vscDarkPlus}
+          language={lang}
+          PreTag="div"
+          customStyle={{ margin: 0, borderRadius: '0 0 8px 8px', fontSize: '0.82rem' }}
+          {...props}
+        >
+          {code}
+        </SyntaxHighlighter>
+      </div>
+    );
+  }
+
+  // Inline code
+  return (
+    <code className={`inline-code ${className || ''}`.trim()} {...props}>
+      {children}
+    </code>
+  );
+};
 
 export function AIChatMessage({ message }) {
   const isAI = message.role === 'ai';
   const isError = message.isError;
   const isStreaming = message.isStreaming;
+  const [copied, setCopied] = React.useState(false);
 
-  // Custom renderer for code blocks to correctly differentiate inline vs block
-  const CodeBlockRenderer = ({ node, className, children, ...props }) => {
-    const match = /language-(\w+)/.exec(className || '');
-    const code = String(children).replace(/\n$/, '');
+  const handleCopyMessage = () => {
+    if (!message.content) return;
+    navigator.clipboard.writeText(message.content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-    // In react-markdown v10, the `inline` prop was removed.
-    // We treat it as a block if it specifies a language OR contains newlines.
-    const isBlock = match || code.includes('\n');
-
-    if (isBlock) {
-      const lang = match ? match[1] : 'text';
-      return (
-        <div className="code-block-container">
-          <div className="code-block-header">
-            <span className="code-block-lang">{lang}</span>
-            <div className="code-block-actions">
-              <button
-                className="btn btn-icon btn-ghost btn-small"
-                title="Copy Code"
-                onClick={() => {
-                  navigator.clipboard.writeText(code);
-                }}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>content_copy</span>
-              </button>
-            </div>
-          </div>
-          <SyntaxHighlighter
-            style={vscDarkPlus}
-            language={lang}
-            PreTag="div"
-            customStyle={{ margin: 0, borderRadius: '0 0 8px 8px', fontSize: '0.82rem' }}
-            {...props}
-          >
-            {code}
-          </SyntaxHighlighter>
-        </div>
-      );
-    }
-
-    // Inline code
-    return (
-      <code className={`inline-code ${className || ''}`.trim()} {...props}>
-        {children}
-      </code>
-    );
+  const handleDownloadMessage = () => {
+    if (!message.content) return;
+    const blob = new Blob([message.content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `response-${Date.now()}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const renderAvatar = () => {
@@ -85,48 +119,49 @@ export function AIChatMessage({ message }) {
     : (message.sender || 'Anonymous');
 
   return (
-    <div className={`chat-message ${isAI ? 'ai-message' : 'user-message'} ${isError ? 'error-message' : ''}`}>
-      <div className="chat-message-header">
-        {renderAvatar()}
-        <span className="chat-message-sender">{senderName}</span>
-      </div>
-
-      {/* Attached Code Files */}
-      {message.attachedFiles && message.attachedFiles.length > 0 && (
-        <div className="attached-code-badge-container">
-          {message.attachedFiles.map((f, idx) => (
-            <div key={`file-${idx}`} className="attached-code-badge">
-              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>code</span>
-              <strong>{f.fileName || 'file'}</strong>
-            </div>
-          ))}
+    <div className={`chat-message-wrapper ${isAI ? 'ai-wrapper' : 'user-wrapper'}`}>
+      <div className={`chat-message ${isAI ? 'ai-message' : 'user-message'} ${isError ? 'error-message' : ''}`}>
+        <div className="chat-message-header">
+          {renderAvatar()}
+          <span className="chat-message-sender">{senderName}</span>
         </div>
-      )}
 
-      {/* Attached Media (Images & Documents) */}
-      {message.attachedMedia && message.attachedMedia.length > 0 && (
-        <div className="attached-media-msg-container">
-          {message.attachedMedia.map((m, idx) => {
-            if (m.type === 'image') {
-              return (
-                <div key={`media-${idx}`} className="ai-media-thumbnail-msg-container">
-                  <img src={m.previewUrl || `data:${m.mimeType};base64,${m.base64}`} alt={m.name} className="ai-media-thumbnail-msg" />
-                  <div className="ai-media-msg-tooltip">{m.name}</div>
-                </div>
-              );
-            } else {
-              return (
-                <div key={`media-${idx}`} className="attached-code-badge doc">
-                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>
-                    {m.mimeType === 'application/pdf' ? 'picture_as_pdf' : m.mimeType === 'text/csv' ? 'table_chart' : 'description'}
-                  </span>
-                  <strong>{m.name}</strong>
-                </div>
-              );
-            }
-          })}
-        </div>
-      )}
+        {/* Attached Code Files */}
+        {message.attachedFiles && message.attachedFiles.length > 0 && (
+          <div className="attached-code-badge-container">
+            {message.attachedFiles.map((f, idx) => (
+              <div key={`file-${idx}`} className="attached-code-badge">
+                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>code</span>
+                <strong>{f.fileName || 'file'}</strong>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Attached Media (Images & Documents) */}
+        {message.attachedMedia && message.attachedMedia.length > 0 && (
+          <div className="attached-media-msg-container">
+            {message.attachedMedia.map((m, idx) => {
+              if (m.type === 'image') {
+                return (
+                  <div key={`media-${idx}`} className="ai-media-thumbnail-msg-container">
+                    <img src={m.previewUrl || `data:${m.mimeType};base64,${m.base64}`} alt={m.name} className="ai-media-thumbnail-msg" />
+                    <div className="ai-media-msg-tooltip">{m.name}</div>
+                  </div>
+                );
+              } else {
+                return (
+                  <div key={`media-${idx}`} className="attached-code-badge doc">
+                    <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>
+                      {m.mimeType === 'application/pdf' ? 'picture_as_pdf' : m.mimeType === 'text/csv' ? 'table_chart' : 'description'}
+                    </span>
+                    <strong>{m.name}</strong>
+                  </div>
+                );
+              }
+            })}
+          </div>
+        )}
 
       <div className="chat-message-content">
         {isAI ? (
@@ -159,6 +194,38 @@ export function AIChatMessage({ message }) {
           </div>
         )}
       </div>
+    </div>
+
+      {/* Message Actions */}
+      {!isStreaming && message.content && !isError && (
+        <div className="chat-message-actions">
+          <button
+            className="btn btn-icon btn-ghost btn-small"
+            title={copied ? "Copied!" : "Copy message"}
+            onClick={handleCopyMessage}
+          >
+            <span 
+              className="material-symbols-outlined" 
+              style={{ 
+                fontSize: '14px',
+                color: copied ? 'var(--success, #10b981)' : 'inherit',
+                transition: 'color 0.2s ease'
+              }}
+            >
+              {copied ? 'check' : 'content_copy'}
+            </span>
+          </button>
+          {isAI && (
+            <button
+              className="btn btn-icon btn-ghost btn-small"
+              title="Download response"
+              onClick={handleDownloadMessage}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>download</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

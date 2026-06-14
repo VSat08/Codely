@@ -234,7 +234,7 @@ export function useAIChat(socket, roomId, userName) {
       });
     };
 
-    const handleSharedChat = ({ sender, message, attachedFiles, requestId }) => {
+    const handleSharedChat = ({ sender, message, attachedFiles, attachedMedia, requestId }) => {
       // Only process if we're in shared mode. 
       // Also skip if this was our own message (we already added it locally)
       setMessages((prev) => {
@@ -260,6 +260,7 @@ export function useAIChat(socket, roomId, userName) {
             sender,
             isRemote: true,
             attachedFiles,
+            attachedMedia,
             requestId
           },
           { role: 'ai', content: '', requestId, isStreaming: true }
@@ -343,7 +344,7 @@ export function useAIChat(socket, roomId, userName) {
       attachedMedia: readyMedia.length > 0 ? readyMedia.map(m => ({
         name: m.name,
         mimeType: m.mimeType,
-        previewUrl: m.previewUrl,
+        base64: m.base64,
         type: m.mimeType.startsWith('image/') ? 'image' : 'document'
       })) : null,
       isRemote: false

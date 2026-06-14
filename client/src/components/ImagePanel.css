@@ -192,8 +192,8 @@
 /* ── Mobile: always show overlay actions for touch ── */
 @media (max-width: 768px) {
   .image-panel {
-    max-height: 240px;
-    padding: var(--space-sm);
+    max-height: 320px; /* Increased to account for the floating pill */
+    padding: var(--space-sm) var(--space-sm) 88px var(--space-sm);
   }
 
   .image-grid {

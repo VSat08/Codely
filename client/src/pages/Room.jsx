@@ -221,18 +221,42 @@ function Room() {
             onTabRename={room.handleRenameTab}
           />
           {room.activeTab ? (
-            <CodeEditor
-              code={room.activeTab.code}
-              language={room.activeTab.language}
-              onChange={handleCodeChange}
-              isRemoteChange={room.isRemoteChange}
-              theme={editorTheme}
-            />
+            <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+              <CodeEditor
+                code={room.activeTab.code}
+                language={room.activeTab.language}
+                onChange={handleCodeChange}
+                isRemoteChange={room.isRemoteChange}
+                theme={editorTheme}
+              />
+            </div>
           ) : (
             <div className="empty-editor">
               <span className="material-symbols-outlined" style={{ fontSize: '3rem', opacity: 0.5 }}>code_blocks</span>
               <p>No tabs open. Create one to start coding.</p>
             </div>
+          )}
+
+          {/* Bottom Panels (Restricted to Editor Width) */}
+          {showImagePanel && (
+            <ImagePanel
+              images={room.images}
+              onImageShare={room.handleImageShare}
+              onImageDelete={room.handleImageDelete}
+              onImageClick={setLightboxImage}
+              addToast={addToast}
+              onClose={() => setShowImagePanel(false)}
+            />
+          )}
+
+          {showFilePanel && (
+            <FilePanel
+              files={room.files}
+              onFileShare={room.handleFileShare}
+              onFileDelete={room.handleFileDelete}
+              addToast={addToast}
+              onClose={() => setShowFilePanel(false)}
+            />
           )}
         </div>
 
@@ -268,29 +292,6 @@ function Room() {
           </div>
         )}
       </div>
-
-      {/* Image Panel */}
-      {showImagePanel && (
-        <ImagePanel
-          images={room.images}
-          onImageShare={room.handleImageShare}
-          onImageDelete={room.handleImageDelete}
-          onImageClick={setLightboxImage}
-          addToast={addToast}
-          onClose={() => setShowImagePanel(false)}
-        />
-      )}
-
-      {/* File Panel */}
-      {showFilePanel && (
-        <FilePanel
-          files={room.files}
-          onFileShare={room.handleFileShare}
-          onFileDelete={room.handleFileDelete}
-          addToast={addToast}
-          onClose={() => setShowFilePanel(false)}
-        />
-      )}
 
       {/* Lightbox */}
       {lightboxImage && (

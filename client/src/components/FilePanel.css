@@ -158,8 +158,8 @@
 /* ── Mobile ── */
 @media (max-width: 768px) {
   .file-panel {
-    max-height: 240px;
-    padding: var(--space-sm);
+    max-height: 320px;
+    padding: var(--space-sm) var(--space-sm) 88px var(--space-sm);
   }
 
   .file-row-actions {
