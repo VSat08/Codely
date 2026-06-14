@@ -4,10 +4,10 @@ import { AIChatSettings } from './AIChatSettings';
 import './AIChatPanel.css';
 
 const SUGGESTIONS = [
+  { icon: 'cloud_done', text: 'Optimise my code' },
   { icon: 'bug_report', text: 'Find bugs in my code' },
   { icon: 'lightbulb', text: 'Explain how this works' },
-  { icon: 'speed', text: 'Optimize my code' },
-  { icon: 'help', text: 'How do I fix this error?' },
+  { icon: 'help', text: 'How do I fix this error' },
 ];
 
 export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
@@ -38,11 +38,11 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
 
   const [input, setInput] = useState('');
   const [showSettings, setShowSettings] = useState(false);
-  
+
   const [showModeMenu, setShowModeMenu] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
-  
+
   const [panelWidth, setPanelWidth] = useState(400);
 
   const messagesEndRef = useRef(null);
@@ -231,7 +231,7 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
       onDrop={handleDrop}
     >
       <div className="ai-resize-handle" onMouseDown={handleMouseDown}>
-         <div className="ai-resize-indicator" />
+        <div className="ai-resize-indicator" />
       </div>
 
       {/* Drag & Drop Overlay */}
@@ -265,15 +265,11 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
       <div className="ai-chat-header">
         <div className="ai-header-left">
           <div className="ai-header-title">
-            <span className="material-symbols-outlined ai-sparkle">auto_awesome</span>
-            <span>Codely AI</span>
-            <span className="ai-provider-badge">
-              {providerName}
-            </span>
+            <span className="text-accent" style={{ fontWeight: 600 }}>Codely</span> <span>AI</span>
           </div>
-          
+
           <div className="ai-mode-selector-wrapper" ref={modeMenuRef}>
-            <button 
+            <button
               className="ai-mode-btn"
               onClick={() => setShowModeMenu(!showModeMenu)}
               title="Shared chats are visible to the room. Private chats are only visible to you."
@@ -295,15 +291,15 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
           </div>
         </div>
         <div className="ai-header-actions">
-           <button className="btn btn-icon btn-ghost" onClick={() => setShowSettings(true)} title="AI Settings">
-             <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>tune</span>
-           </button>
-           <button className="btn btn-icon btn-ghost" onClick={clearChat} title="Clear Chat">
-             <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>delete_sweep</span>
-           </button>
-           <button className="btn btn-icon btn-ghost" onClick={onClose} title="Close Panel">
-             <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
-           </button>
+          <button className="btn btn-icon btn-ghost" onClick={() => setShowSettings(true)} title="AI Settings">
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>apps</span>
+          </button>
+          <button className="btn btn-icon btn-ghost" onClick={clearChat} title="Clear Chat">
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>delete_outline</span>
+          </button>
+          <button className="btn btn-icon btn-ghost" onClick={onClose} title="Close Panel">
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+          </button>
         </div>
       </div>
 
@@ -311,14 +307,13 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
         {messages.length === 0 ? (
           <div className="ai-empty-state">
             <div className="ai-empty-icon">
-              <span className="material-symbols-outlined">smart_toy</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '64px', color: 'var(--accent)' }}>robot_2</span>
             </div>
-            <h3>Codely AI</h3>
             <p>Ask anything about your code — debug, explain, optimize, or just explore ideas.</p>
             <div className="ai-empty-suggestions">
               {SUGGESTIONS.map((s, i) => (
-                <button 
-                  key={i} 
+                <button
+                  key={i}
                   className="ai-suggestion-chip"
                   onClick={() => handleSuggestionClick(s.text)}
                 >
@@ -330,7 +325,7 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
           </div>
         ) : (
           messages.map((msg, i) => (
-             <AIChatMessage key={i} message={msg} />
+            <AIChatMessage key={i} message={msg} />
           ))
         )}
         <div ref={messagesEndRef} />
@@ -339,9 +334,9 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
       <div className="ai-chat-input-area">
         {isStreaming && (
           <div className="ai-streaming-controls">
-             <button className="btn btn-small" onClick={stopGeneration}>
-               <span className="material-symbols-outlined" style={{ fontSize: '16px', marginRight: '4px' }}>stop_circle</span> Stop generating
-             </button>
+            <button className="btn btn-small" onClick={stopGeneration}>
+              <span className="material-symbols-outlined" style={{ fontSize: '16px', marginRight: '4px' }}>stop_circle</span> Stop generating
+            </button>
           </div>
         )}
 
@@ -350,11 +345,11 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
           <div className="ai-attached-files-container">
             {attachedFiles.map((file, idx) => (
               <div key={idx} className="ai-attached-chip">
-                 <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>description</span>
-                 <span className="file-name">{file.fileName}</span>
-                 <button className="btn btn-icon btn-ghost btn-small" onClick={() => removeAttachedFile(file.fileName)}>
-                   <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
-                 </button>
+                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>description</span>
+                <span className="file-name">{file.fileName}</span>
+                <button className="btn btn-icon btn-ghost btn-small" onClick={() => removeAttachedFile(file.fileName)}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
+                </button>
               </div>
             ))}
           </div>
@@ -389,7 +384,7 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
                     )}
                   </div>
                 )}
-                
+
                 {/* File info */}
                 <div className="ai-media-info">
                   <span className="ai-media-name">{media.name}</span>
@@ -420,15 +415,15 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
             ))}
           </div>
         )}
-        
+
         <div className="ai-input-wrapper">
           <div className="ai-attach-menu-wrapper" ref={attachMenuRef}>
-            <button 
-               className="btn btn-icon btn-ghost ai-attach-btn" 
-               title="Attach context"
-               onClick={() => setShowAttachMenu(!showAttachMenu)}
+            <button
+              className="btn btn-icon btn-ghost ai-attach-btn"
+              title="Attach context"
+              onClick={() => setShowAttachMenu(!showAttachMenu)}
             >
-               <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>add_circle</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>add</span>
             </button>
             {showAttachMenu && (
               <div className="ai-dropdown-menu ai-attach-dropdown">
@@ -438,26 +433,26 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
                   <div className="ai-dropdown-empty">No tabs open</div>
                 ) : (
                   tabsArray.map(tab => (
-                    <button 
-                      key={tab.id} 
-                      className="ai-dropdown-item" 
+                    <button
+                      key={tab.id}
+                      className="ai-dropdown-item"
                       onClick={() => handleSelectTabToAttach(tab)}
                     >
                       <span className="material-symbols-outlined">code</span> {tab.name}
                     </button>
                   ))
                 )}
-                
+
                 {/* Upload Section */}
                 <div className="ai-attach-section-header">Upload</div>
-                <button 
-                  className="ai-dropdown-item" 
+                <button
+                  className="ai-dropdown-item"
                   onClick={() => { imageInputRef.current?.click(); setShowAttachMenu(false); }}
                 >
                   <span className="material-symbols-outlined">image</span> Image
                 </button>
-                <button 
-                  className="ai-dropdown-item" 
+                <button
+                  className="ai-dropdown-item"
                   onClick={() => { docInputRef.current?.click(); setShowAttachMenu(false); }}
                 >
                   <span className="material-symbols-outlined">upload_file</span> File
@@ -468,35 +463,36 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
           <textarea
             ref={textareaRef}
             className="ai-textarea"
-            placeholder="Ask a question... (Shift+Enter for new line)"
+            placeholder="Ask a question(Shift + Enter for new line)"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isStreaming}
             rows={1}
           />
-          <button 
-            className="btn btn-icon ai-send-btn"
+          <button
+            className="btn btn-icon btn-primary ai-send-btn"
             onClick={handleSend}
             disabled={!input.trim() || isStreaming || hasLoadingMedia}
             title={hasLoadingMedia ? 'Uploading files...' : 'Send message'}
+            style={{ borderRadius: '8px' }}
           >
-             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>send</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>send</span>
           </button>
         </div>
       </div>
 
       {showSettings && (
         <AIChatSettings
-           provider={provider}
-           setProvider={setProvider}
-           aiModel={aiModel}
-           setAiModel={setAiModel}
-           apiKey={apiKey}
-           setApiKey={setApiKey}
-           getUsageStats={getUsageStats}
-           providerLimits={providerLimits}
-           onClose={() => setShowSettings(false)}
+          provider={provider}
+          setProvider={setProvider}
+          aiModel={aiModel}
+          setAiModel={setAiModel}
+          apiKey={apiKey}
+          setApiKey={setApiKey}
+          getUsageStats={getUsageStats}
+          providerLimits={providerLimits}
+          onClose={() => setShowSettings(false)}
         />
       )}
     </div>

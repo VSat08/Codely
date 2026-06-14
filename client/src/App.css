@@ -13,19 +13,19 @@
 }
 
 :root {
-  /* Colors */
-  --bg-primary: #0D1117;
-  --bg-secondary: #161B22;
-  --bg-tertiary: #1C2333;
-  --bg-elevated: #21262D;
-  --bg-hover: #292E36;
+  /* Colors - Premium True Black Theme */
+  --bg-primary: #000000;
+  --bg-secondary: #0A0A0A;
+  --bg-tertiary: #141414;
+  --bg-elevated: #1F1F1F;
+  --bg-hover: #262626;
 
-  --border-primary: #30363D;
-  --border-secondary: #484F58;
+  --border-primary: #262626;
+  --border-secondary: #333333;
 
-  --text-primary: #E6EDF3;
-  --text-secondary: #8B949E;
-  --text-tertiary: #6E7681;
+  --text-primary: #FAFAFA;
+  --text-secondary: #A1A1AA;
+  --text-tertiary: #71717A;
 
   --accent: #3B82F6;
   --accent-hover: #2563EB;

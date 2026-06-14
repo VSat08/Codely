@@ -7,7 +7,7 @@ import './FilePanel.css';
  * File panel — upload & share documents of any type.
  * Displays a list of shared files with download & delete actions.
  */
-function FilePanel({ files, onFileShare, onFileDelete, addToast }) {
+function FilePanel({ files, onFileShare, onFileDelete, addToast, onClose }) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
@@ -71,7 +71,7 @@ function FilePanel({ files, onFileShare, onFileDelete, addToast }) {
       {/* Header */}
       <div className="file-panel-header">
         <h3>Files <span className="file-count">{files.length}/10</span></h3>
-        <div className="file-actions">
+        <div className="file-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button
             className="btn btn-secondary btn-sm"
             onClick={() => fileInputRef.current?.click()}
@@ -80,6 +80,11 @@ function FilePanel({ files, onFileShare, onFileDelete, addToast }) {
             {uploading ? <span className="spinner-sm" /> : <span className="material-symbols-outlined" style={{fontSize: '18px'}}>upload_file</span>}
             {uploading ? 'Uploading...' : 'Upload'}
           </button>
+          {onClose && (
+            <button className="btn btn-icon btn-ghost" onClick={onClose} title="Close panel" style={{ width: '32px', height: '32px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+            </button>
+          )}
           <input
             ref={fileInputRef}
             type="file"

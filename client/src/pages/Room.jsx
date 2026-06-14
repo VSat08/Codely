@@ -71,7 +71,7 @@ function Room() {
 
   // Platform detection for keyboard shortcuts
   const isMac = typeof navigator !== 'undefined' &&
-    /Mac|iPhone|iPad|iPod/.test(navigator.userAgentData?.platform || navigator.platform);
+    /mac|iphone|ipad|ipod/i.test(navigator.userAgentData?.platform || navigator.platform);
 
   // Keyboard Shortcuts — uses Ctrl (⌃) on Mac, Alt on Windows/Linux
   // Rationale: Option on Mac produces special chars, ⌘ Cmd conflicts with browser shortcuts
@@ -277,6 +277,7 @@ function Room() {
           onImageDelete={room.handleImageDelete}
           onImageClick={setLightboxImage}
           addToast={addToast}
+          onClose={() => setShowImagePanel(false)}
         />
       )}
 
@@ -287,6 +288,7 @@ function Room() {
           onFileShare={room.handleFileShare}
           onFileDelete={room.handleFileDelete}
           addToast={addToast}
+          onClose={() => setShowFilePanel(false)}
         />
       )}
 

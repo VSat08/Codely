@@ -12,7 +12,7 @@ function KeyboardShortcutsModal({ onClose }) {
   }, [onClose]);
 
   // Platform detection
-  const isMac = /Mac|iPhone|iPad|iPod/.test(
+  const isMac = typeof navigator !== 'undefined' && /mac|iphone|ipad|ipod/i.test(
     navigator.userAgentData?.platform || navigator.platform
   );
 

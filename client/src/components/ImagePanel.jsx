@@ -41,7 +41,7 @@ function convertToPng(dataUrl) {
  * Displays a thumbnail grid of shared images.
  * Any user in the room can delete or copy any image.
  */
-function ImagePanel({ images, onImageShare, onImageDelete, onImageClick, addToast }) {
+function ImagePanel({ images, onImageShare, onImageDelete, onImageClick, addToast, onClose }) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
@@ -130,7 +130,7 @@ function ImagePanel({ images, onImageShare, onImageDelete, onImageClick, addToas
       {/* Header */}
       <div className="image-panel-header">
         <h3>Screenshots <span className="image-count">{images.length}/10</span></h3>
-        <div className="image-actions">
+        <div className="image-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button
             className="btn btn-secondary btn-sm"
             onClick={() => fileInputRef.current?.click()}
@@ -139,6 +139,11 @@ function ImagePanel({ images, onImageShare, onImageDelete, onImageClick, addToas
             {uploading ? <span className="spinner-sm" /> : <span className="material-symbols-outlined" style={{fontSize: '18px'}}>upload_file</span>}
             {uploading ? 'Uploading...' : 'Upload'}
           </button>
+          {onClose && (
+            <button className="btn btn-icon btn-ghost" onClick={onClose} title="Close panel" style={{ width: '32px', height: '32px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+            </button>
+          )}
           <input
             ref={fileInputRef}
             type="file"

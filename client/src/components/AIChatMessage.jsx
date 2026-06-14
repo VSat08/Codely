@@ -20,7 +20,7 @@ export function AIChatMessage({ message }) {
   const CodeBlockRenderer = ({ node, className, children, ...props }) => {
     const match = /language-(\w+)/.exec(className || '');
     const code = String(children).replace(/\n$/, '');
-    
+
     // In react-markdown v10, the `inline` prop was removed.
     // We treat it as a block if it specifies a language OR contains newlines.
     const isBlock = match || code.includes('\n');
@@ -32,7 +32,7 @@ export function AIChatMessage({ message }) {
           <div className="code-block-header">
             <span className="code-block-lang">{lang}</span>
             <div className="code-block-actions">
-              <button 
+              <button
                 className="btn btn-icon btn-ghost btn-small"
                 title="Copy Code"
                 onClick={() => {
@@ -68,7 +68,7 @@ export function AIChatMessage({ message }) {
     if (isAI) {
       return (
         <div className="chat-avatar ai-avatar">
-          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>smart_toy</span>
+          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>robot_2</span>
         </div>
       );
     }
@@ -80,8 +80,8 @@ export function AIChatMessage({ message }) {
     );
   };
 
-  const senderName = isAI 
-    ? 'Codely AI' 
+  const senderName = isAI
+    ? 'Codely AI'
     : (message.sender || 'Anonymous');
 
   return (
@@ -90,7 +90,7 @@ export function AIChatMessage({ message }) {
         {renderAvatar()}
         <span className="chat-message-sender">{senderName}</span>
       </div>
-      
+
       {/* Attached Code Files */}
       {message.attachedFiles && message.attachedFiles.length > 0 && (
         <div className="attached-code-badge-container">
@@ -144,7 +144,7 @@ export function AIChatMessage({ message }) {
         ) : (
           <div style={{ whiteSpace: 'pre-wrap' }}>{message.content}</div>
         )}
-        
+
         {/* Thinking / Status Indicator */}
         {isStreaming && !message.content && (
           <div className="ai-thinking-indicator">

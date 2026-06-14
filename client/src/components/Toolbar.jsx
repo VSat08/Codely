@@ -44,7 +44,7 @@ function Toolbar({
 
   // Platform detection
   const isMac = typeof navigator !== 'undefined' &&
-    /Mac|iPhone|iPad|iPod/.test(navigator.userAgentData?.platform || navigator.platform);
+    /mac|iphone|ipad|ipod/i.test(navigator.userAgentData?.platform || navigator.platform);
   const modKey = isMac ? '⌃' : 'Alt';
 
   useEffect(() => {
@@ -169,7 +169,7 @@ function Toolbar({
               </div>
             ) : (
               <>
-                <span 
+                <span
                   className="room-id mono"
                   onDoubleClick={() => setRenaming(true)}
                   title="Double click to rename room"
@@ -178,7 +178,7 @@ function Toolbar({
                   {roomId}
                 </span>
                 <button className="btn btn-icon btn-ghost" onClick={onCopyLink} title="Copy link">
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>content_copy</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>content_copy</span>
                 </button>
               </>
             )}
@@ -198,7 +198,7 @@ function Toolbar({
               </span>
               <span className="material-symbols-outlined language-select-icon" style={{ position: 'static', right: 'auto' }}>expand_more</span>
             </button>
-            
+
             {showLangMenu && (
               <div className="dropdown-menu" style={{ top: 'calc(100% + 4px)', left: '50%', transform: 'translateX(-50%)', minWidth: '160px', maxHeight: '400px', overflowY: 'auto' }}>
                 {LANGUAGES.map((lang) => (
@@ -228,7 +228,7 @@ function Toolbar({
             onClick={handleCopyCode}
             title={`Copy code (${modKey} + C)`}
           >
-            <span className="material-symbols-outlined" style={{fontSize: '20px'}}>content_paste</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>content_paste</span>
           </button>
 
           <button
@@ -236,7 +236,7 @@ function Toolbar({
             onClick={onToggleImages}
             title={`Toggle Screenshots (${modKey} + 2)`}
           >
-            <span className="material-symbols-outlined" style={{fontSize: '20px'}}>image</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>image</span>
           </button>
 
           <button
@@ -244,7 +244,7 @@ function Toolbar({
             onClick={onToggleFiles}
             title={`Toggle Files (${modKey} + 3)`}
           >
-            <span className="material-symbols-outlined" style={{fontSize: '20px'}}>attach_file</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>attach_file</span>
           </button>
 
           <button
@@ -252,7 +252,7 @@ function Toolbar({
             onClick={onToggleAI}
             title={`Toggle AI Assistant (${modKey} + 4)`}
           >
-            <span className="material-symbols-outlined" style={{fontSize: '20px'}}>smart_toy</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>robot_2</span>
           </button>
 
           <button
@@ -260,7 +260,7 @@ function Toolbar({
             onClick={onToggleSidebar}
             title={`Toggle Users Sidebar (${modKey} + 1)`}
           >
-            <span className="material-symbols-outlined" style={{fontSize: '20px'}}>group</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>group</span>
           </button>
 
           {/* More Menu */}
@@ -270,7 +270,7 @@ function Toolbar({
               onClick={() => setShowMenu(!showMenu)}
               title="Room settings"
             >
-              <span className="material-symbols-outlined" style={{fontSize: '20px'}}>more_vert</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>more_vert</span>
             </button>
             {showMenu && (
               <div className="dropdown-menu">
@@ -278,52 +278,52 @@ function Toolbar({
                   className="dropdown-item"
                   onClick={() => { handleCopyCode(); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>content_copy</span> Copy Code
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>content_copy</span> Copy Code
                 </button>
                 <button
                   className="dropdown-item"
                   onClick={() => { onOpenLineRange(); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>select_all</span> Copy Lines...
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>select_all</span> Copy Lines...
                 </button>
                 <div className="dropdown-divider" />
                 <button
                   className="dropdown-item"
                   onClick={() => { handleDownloadFile(); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>download</span> Download File
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>download</span> Download File
                 </button>
                 <button
                   className="dropdown-item"
                   onClick={() => { handleDownloadAll(); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>folder_zip</span> Download All (ZIP)
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>folder_zip</span> Download All (ZIP)
                 </button>
                 <div className="dropdown-divider" />
                 <button
                   className="dropdown-item"
                   onClick={() => { onOpenThemeModal(); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>palette</span> Color Theme
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>palette</span> Color Theme
                 </button>
                 <button
                   className="dropdown-item"
                   onClick={() => { onOpenShortcuts(); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>keyboard</span> Keyboard Shortcuts
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>keyboard</span> Keyboard Shortcuts
                 </button>
                 <div className="dropdown-divider" />
                 <button
                   className="dropdown-item"
                   onClick={() => { setRenaming(true); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>edit</span> Rename Room
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span> Rename Room
                 </button>
                 <button
                   className="dropdown-item dropdown-item-danger"
                   onClick={() => { handleDelete(); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>delete</span> Delete Room
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span> Delete Room
                 </button>
               </div>
             )}
@@ -381,7 +381,7 @@ function Toolbar({
             className={`mobile-bar-btn ${showAIPanel ? 'active' : ''}`}
             onClick={onToggleAI}
           >
-            <span className="material-symbols-outlined">smart_toy</span>
+            <span className="material-symbols-outlined">robot_2</span>
             <span className="mobile-bar-label">AI</span>
           </button>
 
@@ -395,72 +395,85 @@ function Toolbar({
           </button>
 
           {/* More */}
-          <div className="mobile-menu-wrapper" ref={mobileMenuRef}>
+          <div className="mobile-menu-wrapper">
             <button
               className="mobile-bar-btn"
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              onClick={() => setShowMobileMenu(true)}
             >
               <span className="material-symbols-outlined">more_horiz</span>
               <span className="mobile-bar-label">More</span>
             </button>
-            {showMobileMenu && (
-              <div className="dropdown-menu mobile-dropdown-menu">
-                <button
-                  className="dropdown-item"
-                  onClick={() => { handleCopyCode(); setShowMobileMenu(false); }}
-                >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>content_copy</span> Copy Code
-                </button>
-                <button
-                  className="dropdown-item"
-                  onClick={() => { onOpenLineRange(); setShowMobileMenu(false); }}
-                >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>select_all</span> Copy Lines...
-                </button>
-                <div className="dropdown-divider" />
-                <button
-                  className="dropdown-item"
-                  onClick={() => { handleDownloadFile(); setShowMobileMenu(false); }}
-                >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>download</span> Download File
-                </button>
-                <button
-                  className="dropdown-item"
-                  onClick={() => { handleDownloadAll(); setShowMobileMenu(false); }}
-                >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>folder_zip</span> Download All
-                </button>
-                <div className="dropdown-divider" />
-                <button
-                  className="dropdown-item"
-                  onClick={() => { onOpenThemeModal(); setShowMobileMenu(false); }}
-                >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>palette</span> Color Theme
-                </button>
-                <button
-                  className="dropdown-item"
-                  onClick={() => { onOpenShortcuts(); setShowMobileMenu(false); }}
-                >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>keyboard</span> Shortcuts
-                </button>
-                <div className="dropdown-divider" />
-                <button
-                  className="dropdown-item"
-                  onClick={() => { setRenaming(true); setShowMobileMenu(false); }}
-                >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>edit</span> Rename Room
-                </button>
-                <button
-                  className="dropdown-item dropdown-item-danger"
-                  onClick={() => { handleDelete(); setShowMobileMenu(false); }}
-                >
-                  <span className="material-symbols-outlined" style={{fontSize: '18px'}}>delete</span> Delete Room
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
+
+      {/* Mobile Bottom Sheet for 'More' Menu */}
+      {showMobileMenu && (
+        <>
+          <div className="mobile-sheet-backdrop" onClick={() => setShowMobileMenu(false)} />
+          <div className="mobile-bottom-sheet">
+            <div className="mobile-sheet-header">
+              <h3>More Options</h3>
+              <button className="btn btn-icon btn-ghost" onClick={() => setShowMobileMenu(false)}>
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+              </button>
+            </div>
+            <div className="mobile-sheet-content">
+              <button
+                className="dropdown-item sheet-item"
+                onClick={() => { handleCopyCode(); setShowMobileMenu(false); }}
+              >
+                <span className="material-symbols-outlined">content_copy</span> Copy Code
+              </button>
+              <button
+                className="dropdown-item sheet-item"
+                onClick={() => { onOpenLineRange(); setShowMobileMenu(false); }}
+              >
+                <span className="material-symbols-outlined">select_all</span> Copy Lines...
+              </button>
+              <div className="dropdown-divider" />
+              <button
+                className="dropdown-item sheet-item"
+                onClick={() => { handleDownloadFile(); setShowMobileMenu(false); }}
+              >
+                <span className="material-symbols-outlined">download</span> Download File
+              </button>
+              <button
+                className="dropdown-item sheet-item"
+                onClick={() => { handleDownloadAll(); setShowMobileMenu(false); }}
+              >
+                <span className="material-symbols-outlined">folder_zip</span> Download All
+              </button>
+              <div className="dropdown-divider" />
+              <button
+                className="dropdown-item sheet-item"
+                onClick={() => { onOpenThemeModal(); setShowMobileMenu(false); }}
+              >
+                <span className="material-symbols-outlined">palette</span> Color Theme
+              </button>
+              <button
+                className="dropdown-item sheet-item"
+                onClick={() => { onOpenShortcuts(); setShowMobileMenu(false); }}
+              >
+                <span className="material-symbols-outlined">keyboard</span> Shortcuts
+              </button>
+              <div className="dropdown-divider" />
+              <button
+                className="dropdown-item sheet-item"
+                onClick={() => { setRenaming(true); setShowMobileMenu(false); }}
+              >
+                <span className="material-symbols-outlined">edit</span> Rename Room
+              </button>
+              <button
+                className="dropdown-item sheet-item dropdown-item-danger"
+                onClick={() => { handleDelete(); setShowMobileMenu(false); }}
+              >
+                <span className="material-symbols-outlined">delete</span> Delete Room
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }
