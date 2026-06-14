@@ -20,7 +20,7 @@
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
   width: 100%;
-  max-width: 500px;
+  max-width: 520px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -34,6 +34,7 @@
   justify-content: space-between;
   padding: var(--space-md) var(--space-lg);
   border-bottom: 1px solid var(--border-primary);
+  gap: var(--space-sm);
 }
 
 .shortcuts-header h2 {
@@ -43,6 +44,19 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+  flex: 1;
+}
+
+.shortcuts-platform-badge {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  padding: 3px 10px;
+  border-radius: 99px;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
 }
 
 .shortcuts-body {
@@ -82,28 +96,98 @@
 .shortcut-keys {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
+/* ── Realistic 3D Keycap Styling ── */
 kbd {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 24px;
-  padding: 4px 8px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
   font-family: var(--font-ui);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 600;
+  line-height: 1;
   color: var(--text-primary);
-  background: var(--bg-elevated);
+  background: linear-gradient(180deg, 
+    rgba(255,255,255,0.08) 0%, 
+    rgba(255,255,255,0.02) 100%
+  );
+  background-color: var(--bg-elevated);
   border: 1px solid var(--border-secondary);
-  border-radius: 4px;
-  box-shadow: 0 2px 0 rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
-  text-transform: capitalize;
+  border-bottom-width: 3px;
+  border-bottom-color: rgba(0,0,0,0.4);
+  border-radius: 6px;
+  box-shadow: 
+    0 1px 0 rgba(0,0,0,0.3),
+    0 -1px 0 rgba(255,255,255,0.05) inset,
+    0 0 0 1px rgba(0,0,0,0.15);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: transform 80ms ease, box-shadow 80ms ease;
+}
+
+kbd:hover {
+  transform: translateY(1px);
+  border-bottom-width: 2px;
+  box-shadow: 
+    0 0 0 rgba(0,0,0,0.3),
+    0 -1px 0 rgba(255,255,255,0.05) inset,
+    0 0 0 1px rgba(0,0,0,0.15);
+}
+
+/* Modifier keys get a subtle accent tint */
+kbd.kbd-modifier {
+  background: linear-gradient(180deg,
+    rgba(59, 130, 246, 0.12) 0%,
+    rgba(59, 130, 246, 0.04) 100%
+  );
+  background-color: var(--bg-elevated);
+  border-color: rgba(59, 130, 246, 0.25);
+  border-bottom-color: rgba(59, 130, 246, 0.35);
+  color: var(--accent);
+  font-size: 0.82rem;
+  min-width: 32px;
+}
+
+/* Regular keys */
+kbd.kbd-key {
+  text-transform: uppercase;
 }
 
 .shortcut-plus {
   color: var(--text-tertiary);
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
+  opacity: 0.6;
+}
+
+/* ── Footer ── */
+.shortcuts-footer {
+  padding: var(--space-sm) var(--space-lg);
+  border-top: 1px solid var(--border-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shortcuts-hint {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  letter-spacing: 0.2px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .shortcuts-modal-content {
+    max-width: none;
+    margin: var(--space-sm);
+  }
+
+  .shortcut-desc {
+    font-size: 0.82rem;
+  }
 }

@@ -10,6 +10,7 @@
   height: 36px;
   overflow: hidden;
   flex-shrink: 0;
+  position: relative;
 }
 
 .tabs-container {
@@ -17,6 +18,9 @@
   height: 100%;
   overflow-x: auto;
   scrollbar-width: none; /* Firefox */
+  scroll-behavior: smooth;
+  flex: 1;
+  min-width: 0;
 }
 
 .tabs-container::-webkit-scrollbar {
@@ -41,6 +45,7 @@
   min-width: 100px;
   max-width: 200px;
   position: relative;
+  flex-shrink: 0;
 }
 
 .tab:hover {
@@ -99,4 +104,150 @@
 .tab-add-btn:hover {
   background: var(--bg-secondary);
   color: var(--text-primary);
+}
+
+/* ── Scroll Arrows ── */
+.tabs-scroll-btn {
+  display: none; /* shown via media query */
+}
+
+/* ── Tab Count Badge (hidden on desktop) ── */
+.tabs-count-badge {
+  display: none;
+}
+
+/* ── Scroll Fade Indicators ── */
+.tabs-bar.has-scroll-left::before,
+.tabs-bar.has-scroll-right::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 200ms ease;
+}
+
+.tabs-bar.has-scroll-left::before {
+  left: 0;
+  background: linear-gradient(to right, var(--bg-tertiary), transparent);
+}
+
+.tabs-bar.has-scroll-right::after {
+  right: 72px; /* before the add button + count badge area */
+  background: linear-gradient(to left, var(--bg-tertiary), transparent);
+}
+
+/* ═══════════════════════════════════════════
+   Responsive — Tablet (≤768px)
+   ═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .tabs-bar {
+    height: 34px;
+  }
+
+  .tab {
+    min-width: 72px;
+    max-width: 140px;
+    padding: 0 8px;
+    font-size: 0.72rem;
+    gap: 4px;
+  }
+
+  .tab-rename-input {
+    width: 90px;
+    font-size: 0.72rem;
+    padding: 2px 4px;
+  }
+
+  /* Close btn always visible on mobile (no hover) */
+  .tab .tab-close-btn {
+    opacity: 0.6;
+    width: 18px;
+    height: 18px;
+  }
+
+  .tab.active .tab-close-btn {
+    opacity: 1;
+  }
+
+  /* Scroll Arrows */
+  .tabs-scroll-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 100%;
+    flex-shrink: 0;
+    background: var(--bg-tertiary);
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    z-index: 3;
+    transition: background var(--transition-fast), color var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .tabs-scroll-btn:active {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  .tabs-scroll-left {
+    border-right: 1px solid var(--border-primary);
+  }
+
+  .tabs-scroll-right {
+    border-left: 1px solid var(--border-primary);
+  }
+
+  /* Tab count badge */
+  .tabs-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-subtle);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 99px;
+    flex-shrink: 0;
+    margin-left: 4px;
+    font-family: var(--font-mono);
+  }
+
+  .tab-add-btn {
+    width: 32px;
+    height: 34px;
+  }
+
+  /* Adjust fade indicator position for mobile */
+  .tabs-bar.has-scroll-left::before {
+    left: 24px; /* after the scroll arrow */
+  }
+
+  .tabs-bar.has-scroll-right::after {
+    right: 84px; /* before count badge + add btn + scroll arrow */
+  }
+}
+
+/* ═══════════════════════════════════════════
+   Responsive — Small Mobile (≤480px)
+   ═══════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .tab {
+    min-width: 60px;
+    max-width: 110px;
+    padding: 0 6px;
+    font-size: 0.68rem;
+  }
+
+  .tab-rename-input {
+    width: 70px;
+  }
 }

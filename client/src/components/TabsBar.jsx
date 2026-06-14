@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import './TabsBar.css';
 import { getExtensionForLanguage } from '../utils/constants';
 
@@ -6,6 +6,10 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
   const [editingTabId, setEditingTabId] = useState(null);
   const [editName, setEditName] = useState('');
   const inputRef = useRef(null);
+  const containerRef = useRef(null);
+  const activeTabRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   useEffect(() => {
     if (editingTabId && inputRef.current) {
@@ -25,6 +29,44 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
     return () => window.removeEventListener('trigger-rename-tab', handleTriggerRename);
   }, [activeTabId, tabs]);
 
+  // Check scroll overflow state
+  const updateScrollIndicators = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    setCanScrollLeft(scrollLeft > 2);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 2);
+  }, []);
+
+  // Update scroll indicators on scroll, resize, and tab changes
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    updateScrollIndicators();
+    container.addEventListener('scroll', updateScrollIndicators, { passive: true });
+    const resizeObserver = new ResizeObserver(updateScrollIndicators);
+    resizeObserver.observe(container);
+
+    return () => {
+      container.removeEventListener('scroll', updateScrollIndicators);
+      resizeObserver.disconnect();
+    };
+  }, [updateScrollIndicators, tabs]);
+
+  // Auto-scroll active tab into view
+  useEffect(() => {
+    if (activeTabRef.current && containerRef.current) {
+      activeTabRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest',
+      });
+      // Update indicators after scroll animation
+      setTimeout(updateScrollIndicators, 350);
+    }
+  }, [activeTabId, updateScrollIndicators]);
+
   const handleStartEdit = (tab, e) => {
     e.stopPropagation();
     setEditingTabId(tab.id);
@@ -35,7 +77,6 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
     if (!editingTabId) return;
     const name = editName.trim();
     if (name && name !== tabs[editingTabId].name) {
-      // Very basic language inference from extension
       const ext = name.split('.').pop()?.toLowerCase();
       const reverseMap = {
         js: 'javascript', ts: 'typescript', py: 'python', html: 'html',
@@ -74,9 +115,28 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
     }
   };
 
+  const scrollBy = (direction) => {
+    const container = containerRef.current;
+    if (!container) return;
+    container.scrollBy({ left: direction * 120, behavior: 'smooth' });
+  };
+
+  const tabCount = Object.keys(tabs).length;
+
   return (
-    <div className="tabs-bar">
-      <div className="tabs-container">
+    <div className={`tabs-bar ${canScrollLeft ? 'has-scroll-left' : ''} ${canScrollRight ? 'has-scroll-right' : ''}`}>
+      {/* Scroll left arrow (visible when overflowing) */}
+      {canScrollLeft && (
+        <button
+          className="tabs-scroll-btn tabs-scroll-left"
+          onClick={() => scrollBy(-1)}
+          aria-label="Scroll tabs left"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>chevron_left</span>
+        </button>
+      )}
+
+      <div className="tabs-container" ref={containerRef}>
         {Object.values(tabs).map((tab) => {
           const isActive = tab.id === activeTabId;
           const isEditing = tab.id === editingTabId;
@@ -84,10 +144,11 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
           return (
             <div
               key={tab.id}
+              ref={isActive ? activeTabRef : null}
               className={`tab ${isActive ? 'active' : ''}`}
               onClick={() => onTabChange(tab.id)}
               onDoubleClick={(e) => handleStartEdit(tab, e)}
-              title="Double click to rename"
+              title={tab.name || 'Double click to rename'}
             >
               {isEditing ? (
                 <input
@@ -106,7 +167,7 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
                 <span className="tab-name truncate">{tab.name}</span>
               )}
               
-              {!isEditing && Object.keys(tabs).length > 1 && (
+              {!isEditing && tabCount > 1 && (
                 <button
                   className="btn btn-icon btn-ghost tab-close-btn"
                   onClick={(e) => handleDelete(tab.id, e)}
@@ -119,7 +180,21 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
           );
         })}
       </div>
+
+      {/* Scroll right arrow (visible when overflowing) */}
+      {canScrollRight && (
+        <button
+          className="tabs-scroll-btn tabs-scroll-right"
+          onClick={() => scrollBy(1)}
+          aria-label="Scroll tabs right"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>chevron_right</span>
+        </button>
+      )}
       
+      {/* Tab count badge on mobile when overflowing */}
+      <span className="tabs-count-badge" title={`${tabCount} tabs open`}>{tabCount}</span>
+
       <button className="btn btn-icon btn-ghost tab-add-btn" onClick={handleAdd} title="Add new file">
         <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add</span>
       </button>

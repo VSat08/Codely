@@ -69,82 +69,107 @@ function Room() {
     addToast('Theme applied', 'success');
   };
 
-  // Keyboard Shortcuts
+  // Platform detection for keyboard shortcuts
+  const isMac = typeof navigator !== 'undefined' &&
+    /Mac|iPhone|iPad|iPod/.test(navigator.userAgentData?.platform || navigator.platform);
+
+  // Keyboard Shortcuts — uses Ctrl (⌃) on Mac, Alt on Windows/Linux
+  // Rationale: Option on Mac produces special chars, ⌘ Cmd conflicts with browser shortcuts
   useEffect(() => {
     const handleKeyDown = async (e) => {
-      // We no longer block shortcuts in inputs/textareas so they work in the editor!
+      // Cross-platform modifier check: ctrlKey on Mac, altKey on Windows/Linux
+      const modifierActive = isMac ? (e.ctrlKey && !e.metaKey) : e.altKey;
+      if (!modifierActive) return;
 
-      if (e.altKey) {
-        switch (e.key.toLowerCase()) {
-          case 'n': // New Tab
-            e.preventDefault();
-            try {
-              const defaultName = `Untitled-${Object.keys(room.tabs).length + 1}.${getExtensionForLanguage('javascript')}`;
-              const newTab = await room.handleAddTab(defaultName, 'javascript');
-              room.setActiveTabId(newTab.id);
-            } catch (err) {
-              addToast('Failed to create tab', 'error');
-            }
-            break;
-          case 'w': // Close Tab
-            e.preventDefault();
-            if (e.shiftKey) {
-              // Close all (keep one to prevent empty state error on backend)
-              const tabIds = Object.keys(room.tabs);
-              if (tabIds.length > 1) {
-                // Delete all except active (or first)
-                const keepId = room.activeTabId || tabIds[0];
-                for (const id of tabIds) {
-                  if (id !== keepId) {
-                    room.handleDeleteTab(id).catch(() => {});
-                  }
+      switch (e.key.toLowerCase()) {
+        case 'n': // New Tab
+          e.preventDefault();
+          try {
+            const defaultName = `Untitled-${Object.keys(room.tabs).length + 1}.${getExtensionForLanguage('javascript')}`;
+            const newTab = await room.handleAddTab(defaultName, 'javascript');
+            room.setActiveTabId(newTab.id);
+          } catch (err) {
+            addToast('Failed to create tab', 'error');
+          }
+          break;
+        case 'w': // Close Tab
+          e.preventDefault();
+          if (e.shiftKey) {
+            // Close all (keep one to prevent empty state error on backend)
+            const tabIds = Object.keys(room.tabs);
+            if (tabIds.length > 1) {
+              const keepId = room.activeTabId || tabIds[0];
+              for (const id of tabIds) {
+                if (id !== keepId) {
+                  room.handleDeleteTab(id).catch(() => {});
                 }
-                addToast('Closed other tabs', 'info');
               }
-            } else if (room.activeTabId && Object.keys(room.tabs).length > 1) {
-              // Close current
-              room.handleDeleteTab(room.activeTabId).catch(() => addToast('Failed to close tab', 'error'));
+              addToast('Closed other tabs', 'info');
             }
-            break;
-          case 'r': // Rename Room
-            e.preventDefault();
-            window.dispatchEvent(new Event('trigger-rename-room'));
-            break;
-          case 'e': // Rename Tab
-            e.preventDefault();
-            window.dispatchEvent(new Event('trigger-rename-tab'));
-            break;
-          case '1': // Toggle Users
-            e.preventDefault();
-            setShowSidebar(prev => !prev);
-            break;
-          case '2': // Toggle Images
-            e.preventDefault();
-            setShowImagePanel(prev => !prev);
-            break;
-          case '3': // Toggle Files
-            e.preventDefault();
-            setShowFilePanel(prev => !prev);
-            break;
-          case '4': // Toggle AI
-            e.preventDefault();
-            setShowAIPanel(prev => !prev);
-            break;
-          case 't': // Toggle Theme
-            e.preventDefault();
-            setShowThemeModal(prev => !prev);
-            break;
-          case '/': // Show Shortcuts
-            e.preventDefault();
-            setShowShortcuts(true);
-            break;
-        }
+          } else if (room.activeTabId && Object.keys(room.tabs).length > 1) {
+            room.handleDeleteTab(room.activeTabId).catch(() => addToast('Failed to close tab', 'error'));
+          }
+          break;
+        case 'r': // Rename Room
+          e.preventDefault();
+          window.dispatchEvent(new Event('trigger-rename-room'));
+          break;
+        case 'e': // Rename Tab
+          e.preventDefault();
+          window.dispatchEvent(new Event('trigger-rename-tab'));
+          break;
+        case '1': // Toggle Users
+          e.preventDefault();
+          setShowSidebar(prev => !prev);
+          break;
+        case '2': // Toggle Images
+          e.preventDefault();
+          setShowImagePanel(prev => !prev);
+          break;
+        case '3': // Toggle Files
+          e.preventDefault();
+          setShowFilePanel(prev => !prev);
+          break;
+        case '4': // Toggle AI
+          e.preventDefault();
+          setShowAIPanel(prev => !prev);
+          break;
+        case 't': // Toggle Theme
+          e.preventDefault();
+          setShowThemeModal(prev => !prev);
+          break;
+        case '/': // Show Shortcuts
+          e.preventDefault();
+          setShowShortcuts(true);
+          break;
+        case ',': // Previous Tab
+          e.preventDefault();
+          {
+            const tabIds = Object.keys(room.tabs);
+            if (tabIds.length > 1 && room.activeTabId) {
+              const currentIndex = tabIds.indexOf(room.activeTabId);
+              const prevIndex = (currentIndex - 1 + tabIds.length) % tabIds.length;
+              room.setActiveTabId(tabIds[prevIndex]);
+            }
+          }
+          break;
+        case '.': // Next Tab
+          e.preventDefault();
+          {
+            const tabIds = Object.keys(room.tabs);
+            if (tabIds.length > 1 && room.activeTabId) {
+              const currentIndex = tabIds.indexOf(room.activeTabId);
+              const nextIndex = (currentIndex + 1) % tabIds.length;
+              room.setActiveTabId(tabIds[nextIndex]);
+            }
+          }
+          break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [room, addToast]);
+  }, [room, addToast, isMac]);
 
   if (!room.isJoined) {
     return (

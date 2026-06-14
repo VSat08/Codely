@@ -112,12 +112,17 @@
    Responsive — Mobile (≤768px)
    ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
+  /* Account for floating bottom action bar */
+  .room {
+    padding-bottom: 56px;
+  }
+
   /* Sidebar becomes a slide-over drawer */
   .sidebar {
     position: fixed;
     right: 0;
     top: 48px;
-    bottom: 0;
+    bottom: 56px; /* Stop above the bottom bar */
     width: 280px;
     z-index: 50;
     box-shadow: -8px 0 24px rgba(0, 0, 0, 0.5);
@@ -128,10 +133,10 @@
     display: flex;
   }
 
-  /* Toast moves to top-center on mobile for better thumb reach */
+  /* Toast sits above the floating bottom bar */
   .toast-container {
-    bottom: auto;
-    top: 56px;
+    bottom: 68px;
+    top: auto;
     right: 50%;
     transform: translateX(50%);
     left: auto;
@@ -150,3 +155,4 @@
     max-width: none;
   }
 }
+
