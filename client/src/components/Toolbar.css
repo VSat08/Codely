@@ -337,19 +337,6 @@
     color: var(--accent);
   }
 
-  .mobile-bar-btn.active::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    right: 50%;
-    transform: translateX(50%);
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 6px rgba(59, 130, 246, 0.5);
-  }
-
   .mobile-bar-btn.active .material-symbols-outlined {
     transform: translateY(-1px);
   }
@@ -397,15 +384,19 @@
     font-size: 0.7rem;
   }
 
-  /* Hide user count text, keep just the dot */
+  /* Show user count number clearly but compactly */
   .user-count {
-    padding: 3px 6px;
-    font-size: 0;
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    gap: 4px;
+    background: var(--bg-tertiary);
+    font-weight: 500;
   }
 
   .user-count-dot {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
+    margin: 0;
   }
 
   .conn-indicator {
