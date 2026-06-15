@@ -41,6 +41,7 @@ function Toolbar({
   const mobileLangMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [touchStartY, setTouchStartY] = useState(null);
 
   // Platform detection
   const isMac = typeof navigator !== 'undefined' &&
@@ -332,12 +333,22 @@ function Toolbar({
           <span className={`conn-indicator ${isConnected ? 'on' : 'off'}`} title={isConnected ? 'Connected' : 'Disconnected'} />
         </div>
 
-        {/* Mobile: minimal right side — just user count + connection */}
+        {/* Mobile: minimal right side — just user count + connection + copy */}
         <div className="toolbar-right toolbar-actions-mobile">
           <div className="user-count" title={`${userCount} user(s) online`}>
             <span className="user-count-dot" />
             {userCount}
           </div>
+          
+          <button
+            className="btn btn-icon btn-ghost"
+            onClick={handleCopyCode}
+            title="Copy code"
+            style={{ width: '28px', height: '28px' }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>content_paste</span>
+          </button>
+          
           <span className={`conn-indicator ${isConnected ? 'on' : 'off'}`} title={isConnected ? 'Connected' : 'Disconnected'} />
         </div>
       </div>
@@ -348,16 +359,6 @@ function Toolbar({
           ═══════════════════════════════════════ */}
       <div className="mobile-action-bar">
         <div className="mobile-bar-inner">
-          {/* Copy Code */}
-          <button
-            className="mobile-bar-btn"
-            onClick={handleCopyCode}
-            title="Copy code"
-          >
-            <span className="material-symbols-outlined">content_paste</span>
-            <span className="mobile-bar-label">Copy</span>
-          </button>
-
           {/* Screenshots */}
           <button
             className={`mobile-bar-btn ${showImagePanel ? 'active' : ''}`}
@@ -411,8 +412,25 @@ function Toolbar({
       {showMobileMenu && (
         <>
           <div className="mobile-sheet-backdrop" onClick={() => setShowMobileMenu(false)} />
-          <div className="mobile-bottom-sheet">
-            <div className="mobile-sheet-header">
+          <div 
+            className="mobile-bottom-sheet"
+            onTouchStart={(e) => setTouchStartY(e.touches[0].clientY)}
+            onTouchMove={(e) => {
+              if (!touchStartY) return;
+              const diffY = e.touches[0].clientY - touchStartY;
+              if (diffY > 50) {
+                setShowMobileMenu(false);
+                setTouchStartY(null);
+              }
+            }}
+            onTouchEnd={() => setTouchStartY(null)}
+          >
+            <div className="mobile-sheet-drag-handle" />
+            <div 
+              className="mobile-sheet-header" 
+              onClick={() => setShowMobileMenu(false)}
+              style={{ cursor: 'pointer' }}
+            >
               <h3>More Options</h3>
               <button className="btn btn-icon btn-ghost" onClick={() => setShowMobileMenu(false)}>
                 <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>

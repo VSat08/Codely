@@ -366,12 +366,20 @@
     left: 0;
     right: 0;
     background: var(--bg-elevated);
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
+    border-top-left-radius: 36px;
+    border-top-right-radius: 36px;
     z-index: 1000;
     padding: var(--space-md) var(--space-md) calc(var(--space-md) + env(safe-area-inset-bottom));
     box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
     animation: slideInUp 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .mobile-sheet-drag-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--border-secondary);
+    border-radius: 2px;
+    margin: 0 auto var(--space-sm);
   }
 
   .mobile-sheet-header {
@@ -400,7 +408,7 @@
     padding: 12px 8px;
     font-size: 0.95rem;
   }
-  
+
   .sheet-item .material-symbols-outlined {
     font-size: 20px;
   }
