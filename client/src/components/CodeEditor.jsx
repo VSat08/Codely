@@ -1,15 +1,16 @@
 import Editor from '@monaco-editor/react';
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
+import { MonacoBinding } from 'y-monaco';
 
 import { CUSTOM_THEMES } from '../utils/monacoThemes';
 
 /**
  * Monaco Editor wrapper.
- * Handles local edits and applies remote changes without cursor disruption.
+ * Handles local edits and applies remote changes using Yjs and CRDTs (y-monaco).
  */
-function CodeEditor({ code, language, onChange, isRemoteChange, theme }) {
+function CodeEditor({ ydoc, language, theme, tabId }) {
   const editorRef = useRef(null);
-  const monacoRef = useRef(null);
+  const bindingRef = useRef(null);
 
   const handleBeforeMount = useCallback((monaco) => {
     // Register custom themes before the editor instantiates
@@ -20,7 +21,6 @@ function CodeEditor({ code, language, onChange, isRemoteChange, theme }) {
 
   const handleEditorMount = useCallback((editor, monaco) => {
     editorRef.current = editor;
-    monacoRef.current = monaco;
 
     // Set editor options
     editor.updateOptions({
@@ -64,24 +64,37 @@ function CodeEditor({ code, language, onChange, isRemoteChange, theme }) {
       }
     });
 
-    editor.focus();
-  }, []);
+    // If ydoc is already available, bind immediately
+    if (ydoc) {
+      bindYjsToMonaco(editor, ydoc);
+    }
+  }, [ydoc]);
 
-  const handleChange = useCallback(
-    (value) => {
-      if (value !== undefined) {
-        onChange(value);
+  const bindYjsToMonaco = (editor, ydoc) => {
+    if (bindingRef.current) {
+      bindingRef.current.destroy();
+    }
+    const model = editor.getModel();
+    const ytext = ydoc.getText('monaco');
+    bindingRef.current = new MonacoBinding(ytext, model, new Set([editor]), null);
+  };
+
+  useEffect(() => {
+    if (editorRef.current && ydoc) {
+      bindYjsToMonaco(editorRef.current, ydoc);
+    }
+    return () => {
+      if (bindingRef.current) {
+        bindingRef.current.destroy();
+        bindingRef.current = null;
       }
-    },
-    [onChange]
-  );
+    };
+  }, [ydoc, tabId]);
 
   return (
     <Editor
       height="100%"
       language={language}
-      value={code}
-      onChange={handleChange}
       beforeMount={handleBeforeMount}
       onMount={handleEditorMount}
       theme={theme || 'vs-dark'}

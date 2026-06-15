@@ -223,11 +223,10 @@ function Room() {
           {room.activeTab ? (
             <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
               <CodeEditor
-                code={room.activeTab.code}
+                ydoc={room.ydocs?.[room.activeTabId]}
                 language={room.activeTab.language}
-                onChange={handleCodeChange}
-                isRemoteChange={room.isRemoteChange}
                 theme={editorTheme}
+                tabId={room.activeTabId}
               />
             </div>
           ) : (

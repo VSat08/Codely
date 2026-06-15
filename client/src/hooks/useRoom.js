@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';/**
+import { useNavigate } from 'react-router-dom';
+import * as Y from 'yjs';/**
  * Hook to manage room state — tabs, users, images.
  * Handles all socket events related to room synchronization.
  */
@@ -16,6 +17,7 @@ export function useRoom(socket, roomId) {
 
   // Track whether a code change came from a remote user (per tab)
   const remoteChanges = useRef({});
+  const ydocs = useRef({});
   const debounceTimers = useRef({});
 
   // Get or create user identity from localStorage
@@ -51,7 +53,29 @@ export function useRoom(socket, roomId) {
       }
 
       if (state) {
-        setTabs(state.tabs || {});
+        const parsedTabs = {};
+        for (const tabId in state.tabs || {}) {
+          const tabData = state.tabs[tabId];
+          const ydoc = new Y.Doc();
+          if (tabData.yjsState) {
+            const binaryString = atob(tabData.yjsState);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            Y.applyUpdate(ydoc, bytes, 'initial');
+          } else if (tabData.code) {
+             ydoc.getText('monaco').insert(0, tabData.code);
+          }
+          ydoc.on('update', (update, origin) => {
+            if (origin !== socket && origin !== 'initial') {
+              socket.emit('yjs-update', { tabId, update });
+            }
+          });
+          ydocs.current[tabId] = ydoc;
+          parsedTabs[tabId] = { ...tabData, ydoc };
+        }
+        setTabs(parsedTabs);
         // Set first tab as active initially
         const tabIds = Object.keys(state.tabs || {});
         if (tabIds.length > 0) setActiveTabId(tabIds[0]);
@@ -67,7 +91,22 @@ export function useRoom(socket, roomId) {
     // ── Socket Listeners ──
 
     const onTabAdded = ({ tab }) => {
-      setTabs((prev) => ({ ...prev, [tab.id]: tab }));
+      const ydoc = new Y.Doc();
+      if (tab.yjsState) {
+        const binaryString = atob(tab.yjsState);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        Y.applyUpdate(ydoc, bytes, 'initial');
+      }
+      ydoc.on('update', (update, origin) => {
+        if (origin !== socket && origin !== 'initial') {
+          socket.emit('yjs-update', { tabId: tab.id, update });
+        }
+      });
+      ydocs.current[tab.id] = ydoc;
+      setTabs((prev) => ({ ...prev, [tab.id]: { ...tab, ydoc } }));
     };
 
     const onTabDeleted = ({ tabId }) => {
@@ -85,12 +124,11 @@ export function useRoom(socket, roomId) {
       }));
     };
 
-    const onTabCodeChange = ({ tabId, code: newCode }) => {
-      remoteChanges.current[tabId] = true;
-      setTabs((prev) => ({
-        ...prev,
-        [tabId]: { ...prev[tabId], code: newCode }
-      }));
+    const onYjsUpdate = ({ tabId, update }) => {
+      const ydoc = ydocs.current[tabId];
+      if (ydoc) {
+        Y.applyUpdate(ydoc, new Uint8Array(update), socket);
+      }
     };
 
     const onTabLanguageChange = ({ tabId, language: lang }) => {
@@ -152,7 +190,7 @@ export function useRoom(socket, roomId) {
     socket.on('tab-added', onTabAdded);
     socket.on('tab-deleted', onTabDeleted);
     socket.on('tab-renamed', onTabRenamed);
-    socket.on('tab-code-change', onTabCodeChange);
+    socket.on('yjs-update', onYjsUpdate);
     socket.on('tab-language-change', onTabLanguageChange);
     socket.on('user-joined', onUserJoined);
     socket.on('user-left', onUserLeft);
@@ -168,7 +206,7 @@ export function useRoom(socket, roomId) {
       socket.off('tab-added', onTabAdded);
       socket.off('tab-deleted', onTabDeleted);
       socket.off('tab-renamed', onTabRenamed);
-      socket.off('tab-code-change', onTabCodeChange);
+      socket.off('yjs-update', onYjsUpdate);
       socket.off('tab-language-change', onTabLanguageChange);
       socket.off('user-joined', onUserJoined);
       socket.off('user-left', onUserLeft);
@@ -192,28 +230,7 @@ export function useRoom(socket, roomId) {
 
   // ── Actions ──
 
-  const handleTabCodeChange = useCallback(
-    (tabId, newCode) => {
-      if (remoteChanges.current[tabId]) {
-        remoteChanges.current[tabId] = false;
-        return;
-      }
-      
-      setTabs((prev) => ({
-        ...prev,
-        [tabId]: { ...prev[tabId], code: newCode }
-      }));
-
-      // Debounce emitting to the server (150ms)
-      if (debounceTimers.current[tabId]) clearTimeout(debounceTimers.current[tabId]);
-      debounceTimers.current[tabId] = setTimeout(() => {
-        if (socket) {
-          socket.emit('tab-code-change', { tabId, code: newCode });
-        }
-      }, 150);
-    },
-    [socket]
-  );
+  const handleTabCodeChange = useCallback((tabId, newCode) => {}, []);
 
   const handleTabLanguageChange = useCallback(
     (tabId, lang) => {
@@ -343,6 +360,7 @@ export function useRoom(socket, roomId) {
     tabs,
     activeTabId,
     activeTab,
+    ydocs: ydocs.current,
     setActiveTabId,
     users,
     images,

@@ -5,6 +5,7 @@
  */
 
 const crypto = require('crypto');
+const Y = require('yjs');
 
 const rooms = new Map();
 
@@ -14,6 +15,7 @@ function generateId(length = 8) {
 
 function createRoom(id, defaultLanguage = 'javascript') {
   const defaultTabId = generateId();
+  const ydoc = new Y.Doc();
   const room = {
     id,
     tabs: {
@@ -21,7 +23,8 @@ function createRoom(id, defaultLanguage = 'javascript') {
         id: defaultTabId,
         name: `main.${getExtension(defaultLanguage)}`,
         language: defaultLanguage,
-        code: ''
+        code: '',
+        ydoc: ydoc
       }
     },
     images: [],
@@ -60,9 +63,15 @@ function roomExists(id) {
 function addTab(roomId, tabId, name, language) {
   const room = rooms.get(roomId);
   if (room) {
-    room.tabs[tabId] = { id: tabId, name, language, code: '' };
+    room.tabs[tabId] = { id: tabId, name, language, code: '', ydoc: new Y.Doc() };
     room.lastActivity = Date.now();
-    return room.tabs[tabId];
+    return {
+      id: tabId,
+      name,
+      language,
+      code: '',
+      yjsState: Buffer.from(Y.encodeStateAsUpdate(room.tabs[tabId].ydoc)).toString('base64')
+    };
   }
   return null;
 }
@@ -94,6 +103,16 @@ function updateTabCode(roomId, tabId, code) {
   const room = rooms.get(roomId);
   if (room && room.tabs[tabId]) {
     room.tabs[tabId].code = code;
+    room.lastActivity = Date.now();
+  }
+}
+
+function applyYjsUpdate(roomId, tabId, updateBuffer) {
+  const room = rooms.get(roomId);
+  if (room && room.tabs[tabId]) {
+    const ydoc = room.tabs[tabId].ydoc;
+    Y.applyUpdate(ydoc, new Uint8Array(updateBuffer));
+    room.tabs[tabId].code = ydoc.getText('monaco').toString();
     room.lastActivity = Date.now();
   }
 }
@@ -180,9 +199,22 @@ function getRoomState(roomId) {
   for (const [sid, user] of room.users) {
     usersObj[sid] = user;
   }
+  
+  const serializedTabs = {};
+  for (const tabId in room.tabs) {
+    const tab = room.tabs[tabId];
+    serializedTabs[tabId] = {
+      id: tab.id,
+      name: tab.name,
+      language: tab.language,
+      code: tab.code,
+      yjsState: Buffer.from(Y.encodeStateAsUpdate(tab.ydoc)).toString('base64')
+    };
+  }
+
   return {
     id: room.id,
-    tabs: room.tabs,
+    tabs: serializedTabs,
     images: room.images,
     files: room.files || [],
     users: usersObj,
@@ -199,6 +231,7 @@ module.exports = {
   removeTab,
   renameTab,
   updateTabCode,
+  applyYjsUpdate,
   updateTabLanguage,
   addImage,
   removeImage,

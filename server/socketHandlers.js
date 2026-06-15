@@ -106,11 +106,12 @@ function setupSocketHandlers(io) {
       }
     });
 
-    // ── Code Sync ──
-    socket.on('tab-code-change', ({ tabId, code }) => {
+    // ── Code Sync (Yjs) ──
+    socket.on('yjs-update', ({ tabId, update }) => {
       if (!currentRoom) return;
-      roomStore.updateTabCode(currentRoom, tabId, code);
-      socket.to(currentRoom).emit('tab-code-change', { tabId, code });
+      // `update` is an ArrayBuffer/Buffer representing Yjs binary deltas
+      roomStore.applyYjsUpdate(currentRoom, tabId, update);
+      socket.to(currentRoom).emit('yjs-update', { tabId, update });
     });
 
     // ── Language Change ──
