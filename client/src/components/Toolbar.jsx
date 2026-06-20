@@ -30,6 +30,7 @@ function Toolbar({
   onOpenLineRange,
   onOpenShortcuts,
   onOpenThemeModal,
+  liveCode,
 }) {
   const [showMenu, setShowMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
@@ -75,11 +76,12 @@ function Toolbar({
   }, []);
 
   const handleCopyCode = () => {
-    if (!activeTab?.code) {
+    const code = liveCode || activeTab?.code || '';
+    if (!code) {
       addToast('No code to copy', 'error');
       return;
     }
-    navigator.clipboard.writeText(activeTab.code);
+    navigator.clipboard.writeText(code);
     addToast('Code copied to clipboard!', 'success');
   };
 
@@ -88,7 +90,7 @@ function Toolbar({
       addToast('No file to download', 'error');
       return;
     }
-    const blob = new Blob([activeTab.code || ''], { type: 'text/plain' });
+    const blob = new Blob([liveCode || activeTab.code || ''], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -105,7 +107,9 @@ function Toolbar({
     }
     const zip = new JSZip();
     Object.values(tabs).forEach((tab) => {
-      zip.file(tab.name || 'untitled.txt', tab.code || '');
+      // Read live code from Yjs doc if available, fallback to tab.code
+      const code = tab.ydoc?.getText('monaco').toString() || tab.code || '';
+      zip.file(tab.name || 'untitled.txt', code);
     });
     const blob = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(blob);

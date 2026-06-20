@@ -20,8 +20,8 @@ import './Room.css';
 
 function Room() {
   const { roomId } = useParams();
-  const { socket, isConnected } = useSocket();
-  const room = useRoom(socket, roomId);
+  const { socket, isConnected, reconnectCount } = useSocket();
+  const room = useRoom(socket, roomId, reconnectCount);
 
   const [showSidebar, setShowSidebar] = useState(false);
   const [showImagePanel, setShowImagePanel] = useState(false);
@@ -57,11 +57,6 @@ function Room() {
     }
   };
 
-  const handleCodeChange = (newCode) => {
-    if (room.activeTabId) {
-      room.handleTabCodeChange(room.activeTabId, newCode);
-    }
-  };
 
   const handleThemeChange = (newTheme) => {
     setEditorTheme(newTheme);
@@ -206,6 +201,7 @@ function Room() {
         onOpenLineRange={() => setShowLineRange(true)}
         onOpenShortcuts={() => setShowShortcuts(true)}
         onOpenThemeModal={() => setShowThemeModal(true)}
+        liveCode={room.ydocs?.[room.activeTabId]?.getText('monaco').toString() || room.activeTab?.code || ''}
       />
 
       {/* Main Area */}
@@ -303,7 +299,7 @@ function Room() {
       {/* Line Range Modal */}
       {showLineRange && room.activeTab && (
         <LineRangeModal
-          code={room.activeTab.code}
+          code={room.ydocs?.[room.activeTabId]?.getText('monaco').toString() || room.activeTab.code || ''}
           fileName={room.activeTab.name}
           onClose={() => setShowLineRange(false)}
           addToast={addToast}

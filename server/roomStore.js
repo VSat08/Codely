@@ -99,22 +99,19 @@ function renameTab(roomId, tabId, newName, newLanguage) {
   return null;
 }
 
-function updateTabCode(roomId, tabId, code) {
-  const room = rooms.get(roomId);
-  if (room && room.tabs[tabId]) {
-    room.tabs[tabId].code = code;
-    room.lastActivity = Date.now();
-  }
-}
+
 
 function applyYjsUpdate(roomId, tabId, updateBuffer) {
   const room = rooms.get(roomId);
-  if (room && room.tabs[tabId]) {
-    const ydoc = room.tabs[tabId].ydoc;
-    Y.applyUpdate(ydoc, new Uint8Array(updateBuffer));
-    room.tabs[tabId].code = ydoc.getText('monaco').toString();
-    room.lastActivity = Date.now();
-  }
+  if (!room || !room.tabs[tabId]) return;
+
+  const ydoc = room.tabs[tabId].ydoc;
+  const update = updateBuffer instanceof Uint8Array ? updateBuffer : new Uint8Array(updateBuffer);
+
+  // Guard: a corrupt update must not crash the server
+  Y.applyUpdate(ydoc, update);
+  room.tabs[tabId].code = ydoc.getText('monaco').toString();
+  room.lastActivity = Date.now();
 }
 
 function updateTabLanguage(roomId, tabId, language) {
@@ -230,7 +227,7 @@ module.exports = {
   addTab,
   removeTab,
   renameTab,
-  updateTabCode,
+
   applyYjsUpdate,
   updateTabLanguage,
   addImage,

@@ -106,12 +106,75 @@ function setupSocketHandlers(io) {
       }
     });
 
-    // ── Code Sync (Yjs) ──
-    socket.on('yjs-update', ({ tabId, update }) => {
+    // ── Code Sync (Yjs) — Chunked + Error-Guarded ──
+    const chunkBuffers = new Map(); // `${socketId}-${tabId}` → { chunks[], received, total }
+
+    socket.on('yjs-update', ({ tabId, update, chunkIndex, totalChunks }) => {
       if (!currentRoom) return;
-      // `update` is an ArrayBuffer/Buffer representing Yjs binary deltas
-      roomStore.applyYjsUpdate(currentRoom, tabId, update);
-      socket.to(currentRoom).emit('yjs-update', { tabId, update });
+
+      let fullB64;
+
+      if (totalChunks === undefined) {
+        // Non-chunked (fast path — most messages)
+        fullB64 = update;
+      } else {
+        // Chunked message — reassemble
+        const key = `${socket.id}-${tabId}`;
+        if (!chunkBuffers.has(key) || chunkIndex === 0) {
+          chunkBuffers.set(key, { chunks: new Array(totalChunks), received: 0, total: totalChunks });
+        }
+        const buf = chunkBuffers.get(key);
+        buf.chunks[chunkIndex] = update;
+        buf.received++;
+
+        if (buf.received < buf.total) return; // Wait for more chunks
+
+        fullB64 = buf.chunks.join('');
+        chunkBuffers.delete(key);
+      }
+
+      // Decode and apply
+      try {
+        const bytes = Buffer.from(fullB64, 'base64');
+        roomStore.applyYjsUpdate(currentRoom, tabId, bytes);
+      } catch (err) {
+        console.warn(`[Yjs] Failed to apply update from ${socket.id} for tab ${tabId}:`, err.message);
+        return; // Don't broadcast a corrupt update
+      }
+
+      // Forward to other clients (re-chunk if large)
+      const CHUNK_SIZE = 512 * 1024;
+      if (fullB64.length > CHUNK_SIZE) {
+        const total = Math.ceil(fullB64.length / CHUNK_SIZE);
+        for (let i = 0; i < total; i++) {
+          socket.to(currentRoom).emit('yjs-update', {
+            tabId,
+            update: fullB64.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE),
+            chunkIndex: i,
+            totalChunks: total,
+          });
+        }
+      } else {
+        socket.to(currentRoom).emit('yjs-update', { tabId, update: fullB64 });
+      }
+    });
+
+    // ── Yjs Resync (Bug 1: reconnection state-vector diff) ──
+    socket.on('yjs-resync', ({ tabId, stateVector }, callback) => {
+      if (!currentRoom) return callback?.({ error: 'Not in a room' });
+      const room = roomStore.getRoom(currentRoom);
+      if (!room || !room.tabs[tabId]) return callback?.({ error: 'Tab not found' });
+
+      try {
+        const Y = require('yjs');
+        const serverDoc = room.tabs[tabId].ydoc;
+        const sv = Buffer.from(stateVector, 'base64');
+        const diff = Y.encodeStateAsUpdate(serverDoc, sv);
+        callback({ update: Buffer.from(diff).toString('base64') });
+      } catch (err) {
+        console.warn(`[Yjs] Resync failed for tab ${tabId}:`, err.message);
+        callback({ error: 'Resync failed' });
+      }
     });
 
     // ── Language Change ──

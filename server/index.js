@@ -32,6 +32,8 @@ const io = new Server(server, {
     methods: ['GET', 'POST'],
   },
   maxHttpBufferSize: 10 * 1024 * 1024, // 10MB to accommodate base64 images + media uploads
+  pingTimeout: 60000,   // 60s — tolerate slow/lossy networks (default 20s)
+  pingInterval: 25000,  // 25s heartbeat
 });
 
 // Wire up all socket event handlers
