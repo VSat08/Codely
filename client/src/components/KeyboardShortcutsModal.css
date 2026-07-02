@@ -5,35 +5,38 @@
 .shortcuts-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--space-md);
-  animation: fadeIn 200ms ease forwards;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .shortcuts-modal-content {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
+  background: rgba(13, 17, 23, 0.65); /* Glass base */
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px; /* Smoother radius */
   width: 100%;
   max-width: 520px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-lg);
-  animation: fadeInUp 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.05) inset;
+  animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .shortcuts-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-md) var(--space-lg);
-  border-bottom: 1px solid var(--border-primary);
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   gap: var(--space-sm);
 }
 
@@ -60,11 +63,19 @@
 }
 
 .shortcuts-body {
-  padding: var(--space-lg);
+  padding: 8px 24px 24px 24px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
+}
+/* Custom Scrollbar for Modal */
+.shortcuts-body::-webkit-scrollbar {
+  width: 6px;
+}
+.shortcuts-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
 }
 
 .shortcuts-group h3 {
@@ -80,8 +91,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border-primary);
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .shortcut-row:last-child {
@@ -167,11 +178,12 @@ kbd.kbd-key {
 
 /* ── Footer ── */
 .shortcuts-footer {
-  padding: var(--space-sm) var(--space-lg);
-  border-top: 1px solid var(--border-primary);
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .shortcuts-hint {

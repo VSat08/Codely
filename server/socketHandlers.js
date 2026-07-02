@@ -159,6 +159,14 @@ function setupSocketHandlers(io) {
       }
     });
 
+    // ── Awareness Sync (Cursors & Identity) ──
+    socket.on('yjs-awareness', ({ tabId, update }) => {
+      if (!currentRoom) return;
+      // Forward the awareness update directly to all other clients in the room.
+      // Awareness updates are usually small, so chunking isn't typically needed.
+      socket.to(currentRoom).emit('yjs-awareness', { tabId, update });
+    });
+
     // ── Yjs Resync (Bug 1: reconnection state-vector diff) ──
     socket.on('yjs-resync', ({ tabId, stateVector }, callback) => {
       if (!currentRoom) return callback?.({ error: 'Not in a room' });

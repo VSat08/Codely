@@ -31,6 +31,7 @@ function Toolbar({
   onOpenShortcuts,
   onOpenThemeModal,
   liveCode,
+  ydocs,
 }) {
   const [showMenu, setShowMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
@@ -107,8 +108,8 @@ function Toolbar({
     }
     const zip = new JSZip();
     Object.values(tabs).forEach((tab) => {
-      // Read live code from Yjs doc if available, fallback to tab.code
-      const code = tab.ydoc?.getText('monaco').toString() || tab.code || '';
+      // Read live code from Yjs doc (canonical source), fallback to tab.code
+      const code = ydocs?.[tab.id]?.getText('monaco').toString() || tab.code || '';
       zip.file(tab.name || 'untitled.txt', code);
     });
     const blob = await zip.generateAsync({ type: 'blob' });
@@ -141,6 +142,47 @@ function Toolbar({
     } catch (err) {
       addToast(String(err), 'error');
     }
+  };
+
+  const renderLanguageIcon = (langValue, isDropdown = false) => {
+    let type = 'material';
+    let iconClass = 'code';
+    
+    switch (langValue) {
+      case 'javascript': type = 'devicon'; iconClass = 'devicon-javascript-plain colored'; break;
+      case 'typescript': type = 'devicon'; iconClass = 'devicon-typescript-plain colored'; break;
+      case 'python': type = 'devicon'; iconClass = 'devicon-python-plain colored'; break;
+      case 'java': type = 'devicon'; iconClass = 'devicon-java-plain colored'; break;
+      case 'c': type = 'devicon'; iconClass = 'devicon-c-plain colored'; break;
+      case 'cpp': type = 'devicon'; iconClass = 'devicon-cplusplus-plain colored'; break;
+      case 'csharp': type = 'devicon'; iconClass = 'devicon-csharp-plain colored'; break;
+      case 'go': type = 'devicon'; iconClass = 'devicon-go-original-wordmark colored'; break;
+      case 'rust': type = 'devicon'; iconClass = 'devicon-rust-original'; break;
+      case 'ruby': type = 'devicon'; iconClass = 'devicon-ruby-plain colored'; break;
+      case 'php': type = 'devicon'; iconClass = 'devicon-php-plain colored'; break;
+      case 'swift': type = 'devicon'; iconClass = 'devicon-swift-plain colored'; break;
+      case 'kotlin': type = 'devicon'; iconClass = 'devicon-kotlin-plain colored'; break;
+      case 'html': type = 'devicon'; iconClass = 'devicon-html5-plain colored'; break;
+      case 'css': type = 'devicon'; iconClass = 'devicon-css3-plain colored'; break;
+      case 'markdown': type = 'devicon'; iconClass = 'devicon-markdown-original'; break;
+      case 'shell': type = 'devicon'; iconClass = 'devicon-bash-plain'; break;
+      case 'dockerfile': type = 'devicon'; iconClass = 'devicon-docker-plain colored'; break;
+      case 'sql': type = 'material'; iconClass = 'database'; break;
+      case 'json': type = 'material'; iconClass = 'data_object'; break;
+      case 'xml':
+      case 'yaml': type = 'material'; iconClass = 'data_object'; break;
+      case 'plaintext': type = 'material'; iconClass = 'article'; break;
+      default: type = 'material'; iconClass = 'code'; break;
+    }
+
+    const size = isDropdown ? '14px' : '16px';
+    const margin = isDropdown ? '8px' : '6px';
+    const opacity = (type === 'devicon' || !isDropdown) ? 1 : 0.8;
+    
+    if (type === 'devicon') {
+      return <i className={iconClass} style={{ fontSize: size, marginRight: margin, width: size, textAlign: 'center', opacity }}></i>;
+    }
+    return <span className="material-symbols-outlined" style={{ fontSize: size, marginRight: margin, width: size, textAlign: 'center', opacity }}>{iconClass}</span>;
   };
 
   return (
@@ -198,10 +240,13 @@ function Toolbar({
               onClick={() => setShowLangMenu(!showLangMenu)}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {LANGUAGES.find(l => l.value === language)?.label || 'JavaScript'}
-              </span>
-              <span className="material-symbols-outlined language-select-icon" style={{ position: 'static', right: 'auto' }}>expand_more</span>
+              <div style={{ display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+                {renderLanguageIcon(language, false)}
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {LANGUAGES.find(l => l.value === language)?.label || 'JavaScript'}
+                </span>
+              </div>
+              <span className="material-symbols-outlined language-select-icon" style={{ position: 'static', right: 'auto', marginLeft: '4px' }}>expand_more</span>
             </button>
 
             {showLangMenu && (
@@ -211,8 +256,9 @@ function Toolbar({
                     key={lang.value}
                     className={`dropdown-item ${language === lang.value ? 'active' : ''}`}
                     onClick={() => { onLanguageChange(lang.value); setShowLangMenu(false); }}
-                    style={{ display: 'flex', width: '100%' }}
+                    style={{ display: 'flex', alignItems: 'center', width: '100%' }}
                   >
+                    {renderLanguageIcon(lang.value, true)}
                     {lang.label}
                   </button>
                 ))}
@@ -283,52 +329,52 @@ function Toolbar({
                   className="dropdown-item"
                   onClick={() => { handleCopyCode(); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>content_copy</span> Copy Code
+                  <span className="material-symbols-outlined dropdown-icon">content_copy</span> Copy Code
                 </button>
                 <button
                   className="dropdown-item"
                   onClick={() => { onOpenLineRange(); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>select_all</span> Copy Lines...
+                  <span className="material-symbols-outlined dropdown-icon">select_all</span> Copy Lines...
                 </button>
                 <div className="dropdown-divider" />
                 <button
                   className="dropdown-item"
                   onClick={() => { handleDownloadFile(); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>download</span> Download File
+                  <span className="material-symbols-outlined dropdown-icon">download</span> Download File
                 </button>
                 <button
                   className="dropdown-item"
                   onClick={() => { handleDownloadAll(); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>folder_zip</span> Download All (ZIP)
+                  <span className="material-symbols-outlined dropdown-icon">folder_zip</span> Download All (ZIP)
                 </button>
                 <div className="dropdown-divider" />
                 <button
                   className="dropdown-item"
                   onClick={() => { onOpenThemeModal(); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>palette</span> Color Theme
+                  <span className="material-symbols-outlined dropdown-icon">palette</span> Color Theme
                 </button>
                 <button
                   className="dropdown-item"
                   onClick={() => { onOpenShortcuts(); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>keyboard</span> Keyboard Shortcuts
+                  <span className="material-symbols-outlined dropdown-icon">keyboard</span> Keyboard Shortcuts
                 </button>
                 <div className="dropdown-divider" />
                 <button
                   className="dropdown-item"
                   onClick={() => { setRenaming(true); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span> Rename Room
+                  <span className="material-symbols-outlined dropdown-icon">edit</span> Rename Room
                 </button>
                 <button
                   className="dropdown-item dropdown-item-danger"
                   onClick={() => { handleDelete(); setShowMenu(false); }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span> Delete Room
+                  <span className="material-symbols-outlined dropdown-icon">delete</span> Delete Room
                 </button>
               </div>
             )}

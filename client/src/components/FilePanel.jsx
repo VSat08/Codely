@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { validateFile, fileToBase64, getFileIcon, formatFileSize } from '../utils/fileUtils';
 import { timeAgo } from '../utils/imageUtils';
+import { ACCEPTED_FILE_EXTENSIONS } from '../utils/constants';
 import './FilePanel.css';
 
 /**
@@ -11,6 +12,7 @@ function FilePanel({ files, onFileShare, onFileDelete, addToast, onClose }) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const dragCounter = useRef(0);
 
   const processAndUpload = useCallback(async (file) => {
     const validation = validateFile(file);
@@ -32,23 +34,47 @@ function FilePanel({ files, onFileShare, onFileDelete, addToast, onClose }) {
   }, [onFileShare, addToast]);
 
   // File input
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) processAndUpload(file);
+  const handleFileChange = async (e) => {
+    const files = Array.from(e.target.files || []);
+    for (const file of files) {
+      await processAndUpload(file);
+    }
     e.target.value = '';
   };
 
   // Drag & Drop
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    if (e.dataTransfer?.types?.includes('Files')) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) {
+      setIsDragging(false);
+    }
+  };
+
   const handleDragOver = (e) => {
     e.preventDefault();
-    setIsDragging(true);
+    e.stopPropagation();
   };
-  const handleDragLeave = () => setIsDragging(false);
-  const handleDrop = (e) => {
+
+  const handleDrop = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) processAndUpload(file);
+    dragCounter.current = 0;
+    const files = Array.from(e.dataTransfer.files || []);
+    for (const file of files) {
+      await processAndUpload(file);
+    }
   };
 
   // Download
@@ -63,6 +89,7 @@ function FilePanel({ files, onFileShare, onFileDelete, addToast, onClose }) {
   return (
     <div
       className={`file-panel ${isDragging ? 'dragging' : ''}`}
+      onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -88,6 +115,8 @@ function FilePanel({ files, onFileShare, onFileDelete, addToast, onClose }) {
           <input
             ref={fileInputRef}
             type="file"
+            accept={ACCEPTED_FILE_EXTENSIONS.join(',')}
+            multiple
             onChange={handleFileChange}
             style={{ display: 'none' }}
           />

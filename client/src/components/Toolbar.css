@@ -173,30 +173,48 @@
   top: 100%;
   right: 0;
   margin-top: 6px;
-  background: var(--bg-elevated);
+  background: rgba(30, 30, 30, 0.85); /* Semi-transparent for premium glassmorphism */
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  min-width: 170px;
-  overflow: hidden;
+  border-radius: 10px; /* Slightly rounder for modern feel */
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  min-width: 180px;
+  padding: 6px; /* Inset padding for the floating pill hover effect */
   z-index: 100;
   animation: fadeIn 150ms ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .dropdown-item {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: 10px;
   width: 100%;
-  padding: 10px 14px;
+  padding: 8px 12px;
   font-size: 0.85rem;
   color: var(--text-primary);
   text-align: left;
-  transition: background var(--transition-fast);
+  border-radius: 6px; /* Pill shape on hover */
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.dropdown-icon {
+  font-size: 16px;
+  opacity: 0.65;
+  transition: opacity var(--transition-fast);
+}
+
+.dropdown-item:hover .dropdown-icon {
+  opacity: 1;
 }
 
 .dropdown-item:hover {
-  background: var(--bg-hover);
+  background: rgba(255, 255, 255, 0.08); /* Subtle highlight */
 }
 
 .dropdown-item.active {
@@ -210,13 +228,14 @@
 }
 
 .dropdown-item-danger:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.15);
 }
 
 .dropdown-divider {
   height: 1px;
   background: var(--border-primary);
-  margin: 4px 0;
+  margin: 4px 2px;
+  opacity: 0.6;
 }
 
 /* ══════════════════════════════════════════

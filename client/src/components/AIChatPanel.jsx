@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AIChatMessage } from './AIChatMessage';
 import { AIChatSettings } from './AIChatSettings';
+import { ACCEPTED_IMAGE_TYPES, ACCEPTED_FILE_EXTENSIONS } from '../utils/constants';
 import './AIChatPanel.css';
 
 const SUGGESTIONS = [
@@ -9,8 +10,14 @@ const SUGGESTIONS = [
   { icon: 'lightbulb', text: 'Explain how this works' },
   { icon: 'help', text: 'How do I fix this error' },
 ];
-
-export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
+export function AIChatPanel({ aiChat, activeTab, tabs, ydocs, onClose, addToast }) {
+  // Helper: read live code from Yjs doc (the source of truth), falling back to tab.code
+  const getLiveCode = (tab) => {
+    if (ydocs && ydocs[tab.id]) {
+      return ydocs[tab.id].getText('monaco').toString();
+    }
+    return tab.code || '';
+  };
   const {
     messages,
     isStreaming,
@@ -35,6 +42,8 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
     providerLimits,
     clearChat
   } = aiChat;
+
+  const tabsArray = Object.values(tabs);
 
   const [input, setInput] = useState('');
   const [showSettings, setShowSettings] = useState(false);
@@ -115,7 +124,18 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
   const handleSend = () => {
     if (!input.trim() || isStreaming) return;
     isUserScrolledUp.current = false;
-    const result = sendMessage(input);
+
+    // Refresh all attached file codes from Yjs before sending,
+    // so the AI always sees the latest editor content, not a stale snapshot.
+    const freshFiles = attachedFiles.map(f => {
+      const tab = tabsArray.find(t => t.name === f.fileName);
+      if (tab) {
+        return { ...f, code: getLiveCode(tab) };
+      }
+      return f;
+    });
+
+    const result = sendMessage(input, freshFiles);
     if (result?.error) {
       addToast(result.error, 'error');
       return;
@@ -139,20 +159,30 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
       addToast('File already attached', 'info');
       return;
     }
-    attachFile(tab.code, tab.language, tab.name);
+    attachFile(getLiveCode(tab), tab.language, tab.name);
     setShowAttachMenu(false);
     addToast(`📎 Attached ${tab.name}`, 'success');
   };
 
   const handleSuggestionClick = (text) => {
     isUserScrolledUp.current = false;
-    let currentFiles = [...attachedFiles];
+
+    // Refresh all already-attached file codes from Yjs
+    let currentFiles = attachedFiles.map(f => {
+      const tab = tabsArray.find(t => t.name === f.fileName);
+      if (tab) {
+        return { ...f, code: getLiveCode(tab) };
+      }
+      return f;
+    });
+
     // Auto-attach current file for context if not already attached
-    if (activeTab && !attachedFiles.some(f => f.fileName === tabs[activeTab]?.name)) {
+    if (activeTab && !currentFiles.some(f => f.fileName === tabs[activeTab]?.name)) {
       const tab = tabs[activeTab];
       if (tab && currentFiles.length < 5) {
-        currentFiles.push({ code: tab.code, language: tab.language, fileName: tab.name });
-        attachFile(tab.code, tab.language, tab.name);
+        const liveCode = getLiveCode(tab);
+        currentFiles.push({ code: liveCode, language: tab.language, fileName: tab.name });
+        attachFile(liveCode, tab.language, tab.name);
       }
     }
     // We send message passing the overridden files to fix race condition
@@ -222,8 +252,7 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
   };
 
   const hasLoadingMedia = attachedMedia.some(m => m.status === 'loading');
-  const providerName = provider === 'gemini' ? 'Gemini' : provider === 'claude' ? 'Claude' : provider.charAt(0).toUpperCase() + provider.slice(1);
-  const tabsArray = Object.values(tabs);
+
 
   // Helper: get icon for document type
   const getDocIcon = (mimeType) => {
@@ -261,7 +290,7 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
       <input
         ref={imageInputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp,image/gif"
+        accept={ACCEPTED_IMAGE_TYPES.join(',')}
         multiple
         style={{ display: 'none' }}
         onChange={handleImageInputChange}
@@ -269,6 +298,7 @@ export function AIChatPanel({ aiChat, activeTab, tabs, onClose, addToast }) {
       <input
         ref={docInputRef}
         type="file"
+        accept={ACCEPTED_FILE_EXTENSIONS.join(',')}
         multiple
         style={{ display: 'none' }}
         onChange={handleDocInputChange}

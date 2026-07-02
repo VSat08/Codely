@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { validateImage, compressImage, getImageFromClipboard, timeAgo } from '../utils/imageUtils';
+import { ACCEPTED_IMAGE_TYPES } from '../utils/constants';
 import './ImagePanel.css';
 
 /**
@@ -45,6 +46,7 @@ function ImagePanel({ images, onImageShare, onImageDelete, onImageClick, addToas
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const dragCounter = useRef(0);
 
   const processAndUpload = useCallback(async (file) => {
     const validation = validateImage(file);
@@ -66,26 +68,48 @@ function ImagePanel({ images, onImageShare, onImageDelete, onImageClick, addToas
   }, [onImageShare, addToast]);
 
   // File input
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) processAndUpload(file);
+  const handleFileChange = async (e) => {
+    const files = Array.from(e.target.files || []);
+    for (const file of files) {
+      await processAndUpload(file);
+    }
     e.target.value = '';
   };
 
   // Drag & Drop
-  const handleDragOver = (e) => {
+  const handleDragEnter = (e) => {
     e.preventDefault();
-    setIsDragging(true);
+    e.stopPropagation();
+    dragCounter.current++;
+    if (e.dataTransfer?.types?.includes('Files')) {
+      setIsDragging(true);
+    }
   };
 
-  const handleDragLeave = () => setIsDragging(false);
-
-  const handleDrop = (e) => {
+  const handleDragLeave = (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      processAndUpload(file);
+    dragCounter.current = 0;
+    const files = Array.from(e.dataTransfer.files || []);
+    for (const file of files) {
+      if (file.type.startsWith('image/')) {
+        await processAndUpload(file);
+      }
     }
   };
 
@@ -121,6 +145,7 @@ function ImagePanel({ images, onImageShare, onImageDelete, onImageClick, addToas
   return (
     <div
       className={`image-panel ${isDragging ? 'dragging' : ''}`}
+      onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -147,7 +172,8 @@ function ImagePanel({ images, onImageShare, onImageDelete, onImageClick, addToas
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/png,image/jpeg,image/gif,image/webp"
+            accept={ACCEPTED_IMAGE_TYPES.join(',')}
+            multiple
             onChange={handleFileChange}
             style={{ display: 'none' }}
           />

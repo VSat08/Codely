@@ -202,6 +202,7 @@ function Room() {
         onOpenShortcuts={() => setShowShortcuts(true)}
         onOpenThemeModal={() => setShowThemeModal(true)}
         liveCode={room.ydocs?.[room.activeTabId]?.getText('monaco').toString() || room.activeTab?.code || ''}
+        ydocs={room.ydocs}
       />
 
       {/* Main Area */}
@@ -220,6 +221,7 @@ function Room() {
             <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
               <CodeEditor
                 ydoc={room.ydocs?.[room.activeTabId]}
+                awareness={room.awarenesses?.[room.activeTabId]}
                 language={room.activeTab.language}
                 theme={editorTheme}
                 tabId={room.activeTabId}
@@ -260,6 +262,7 @@ function Room() {
             aiChat={aiChat}
             activeTab={room.activeTabId}
             tabs={room.tabs}
+            ydocs={room.ydocs}
             onClose={() => setShowAIPanel(false)}
             addToast={addToast}
           />

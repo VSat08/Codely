@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as Y from 'yjs';
+import { Awareness, encodeAwarenessUpdate, applyAwarenessUpdate, removeAwarenessStates } from 'y-protocols/awareness';
 
 // ─── Base64 Utilities (Bug 3: batch-chunked, ~50x faster for large payloads) ──
 
@@ -57,8 +58,24 @@ export function useRoom(socket, roomId, reconnectCount) {
   const [currentUser, setCurrentUser] = useState(null);
 
   const ydocs = useRef({});
+  const awarenesses = useRef({});
   const batchTimers = useRef({});
   const pendingUpdates = useRef({}); // tabId → [Uint8Array, ...]
+  
+  const currentUserRef = useRef(null);
+  useEffect(() => {
+    currentUserRef.current = currentUser;
+    // Update identity on all active awareness instances when currentUser changes
+    if (currentUser) {
+      Object.values(awarenesses.current).forEach((awareness) => {
+        awareness.setLocalStateField('user', { 
+          name: currentUser.name, 
+          color: currentUser.color,
+          socketId: socket?.id
+        });
+      });
+    }
+  }, [currentUser, socket]);
 
   // ─── User Identity ──────────────────────────────────────────────────────
 
@@ -152,6 +169,30 @@ export function useRoom(socket, roomId, reconnectCount) {
       }
     });
 
+    // Wire Awareness (Cursors & Identity)
+    if (awarenesses.current[tabId]) {
+      awarenesses.current[tabId].destroy();
+    }
+    const awareness = new Awareness(ydoc);
+    const user = currentUserRef.current || { name: 'Anonymous', color: '#3B82F6' };
+    awareness.setLocalStateField('user', { 
+      name: user.name, 
+      color: user.color,
+      socketId: socket?.id
+    });
+
+    awareness.on('update', ({ added, updated, removed }, origin) => {
+      if (origin !== socket) {
+        const changedClients = added.concat(updated).concat(removed);
+        const update = encodeAwarenessUpdate(awareness, changedClients);
+        const b64 = uint8ToBase64(update);
+        if (socket) {
+          socket.emit('yjs-awareness', { tabId, update: b64 });
+        }
+      }
+    });
+
+    awarenesses.current[tabId] = awareness;
     ydocs.current[tabId] = ydoc;
     return ydoc;
   }, [socket, emitYjsUpdate]);
@@ -194,6 +235,14 @@ export function useRoom(socket, roomId, reconnectCount) {
       }
       setCurrentUser(user);
       setIsJoined(true);
+
+      // Bootstrap: Broadcast our initial awareness state to everyone in the room
+      setTimeout(() => {
+        Object.entries(awarenesses.current).forEach(([tId, awareness]) => {
+          const update = encodeAwarenessUpdate(awareness, [awareness.clientID]);
+          socket.emit('yjs-awareness', { tabId: tId, update: uint8ToBase64(update) });
+        });
+      }, 500); // small delay to ensure bindings are ready
     });
 
     // ── Socket Listeners ──────────────────────────────────────────────
@@ -209,6 +258,11 @@ export function useRoom(socket, roomId, reconnectCount) {
       if (ydoc) {
         ydoc.destroy();
         delete ydocs.current[tabId];
+      }
+      const awareness = awarenesses.current[tabId];
+      if (awareness) {
+        awareness.destroy();
+        delete awarenesses.current[tabId];
       }
       // Clear any pending batch for this tab
       if (batchTimers.current[tabId]) {
@@ -249,8 +303,8 @@ export function useRoom(socket, roomId, reconnectCount) {
         return;
       }
 
-      // Chunked message — reassemble
-      const key = tabId;
+      // Chunked message (reassemble)
+      const key = `server-${tabId}`;
       if (!chunkBuffers[key] || chunkIndex === 0) {
         chunkBuffers[key] = { chunks: new Array(totalChunks), received: 0, total: totalChunks };
       }
@@ -260,14 +314,28 @@ export function useRoom(socket, roomId, reconnectCount) {
 
       if (buf.received === buf.total) {
         const fullB64 = buf.chunks.join('');
-        delete chunkBuffers[key];
         try {
           Y.applyUpdate(ydoc, base64ToUint8(fullB64), socket);
         } catch (err) {
           console.warn(`[Yjs] Failed to apply chunked update for tab ${tabId}:`, err);
         }
+        delete chunkBuffers[key];
       }
     };
+    socket.on('yjs-update', onYjsUpdate);
+
+    // ── Awareness Receiver ──
+    const onYjsAwareness = ({ tabId, update }) => {
+      const awareness = awarenesses.current[tabId];
+      if (awareness) {
+        try {
+          applyAwarenessUpdate(awareness, base64ToUint8(update), socket);
+        } catch (err) {
+          console.warn(`[Yjs] Failed to apply awareness update for tab ${tabId}:`, err);
+        }
+      }
+    };
+    socket.on('yjs-awareness', onYjsAwareness);
 
     const onTabLanguageChange = ({ tabId, language: lang }) => {
       setTabs((prev) => ({
@@ -278,6 +346,14 @@ export function useRoom(socket, roomId, reconnectCount) {
 
     const onUserJoined = ({ socketId, user }) => {
       setUsers((prev) => ({ ...prev, [socketId]: user }));
+      // Bootstrap: Send our awareness state to the newly joined user
+      Object.entries(awarenesses.current).forEach(([tId, awareness]) => {
+        const state = awareness.getLocalState();
+        if (state) {
+          const update = encodeAwarenessUpdate(awareness, [awareness.clientID]);
+          socket.emit('yjs-awareness', { tabId: tId, update: uint8ToBase64(update) });
+        }
+      });
     };
 
     const onUserLeft = ({ socketId }) => {
@@ -285,6 +361,20 @@ export function useRoom(socket, roomId, reconnectCount) {
         const next = { ...prev };
         delete next[socketId];
         return next;
+      });
+      
+      // Edge Case Fix: Instantly clear ghost cursors for the disconnected user
+      Object.values(awarenesses.current).forEach((awareness) => {
+        const states = awareness.getStates();
+        const clientsToRemove = [];
+        states.forEach((state, clientId) => {
+          if (state.user && state.user.socketId === socketId) {
+            clientsToRemove.push(clientId);
+          }
+        });
+        if (clientsToRemove.length > 0) {
+          removeAwarenessStates(awareness, clientsToRemove, 'local');
+        }
       });
     };
 
@@ -329,6 +419,7 @@ export function useRoom(socket, roomId, reconnectCount) {
     socket.on('tab-deleted', onTabDeleted);
     socket.on('tab-renamed', onTabRenamed);
     socket.on('yjs-update', onYjsUpdate);
+    socket.on('yjs-awareness', onYjsAwareness);
     socket.on('tab-language-change', onTabLanguageChange);
     socket.on('user-joined', onUserJoined);
     socket.on('user-left', onUserLeft);
@@ -345,6 +436,7 @@ export function useRoom(socket, roomId, reconnectCount) {
       socket.off('tab-deleted', onTabDeleted);
       socket.off('tab-renamed', onTabRenamed);
       socket.off('yjs-update', onYjsUpdate);
+      socket.off('yjs-awareness', onYjsAwareness);
       socket.off('tab-language-change', onTabLanguageChange);
       socket.off('user-joined', onUserJoined);
       socket.off('user-left', onUserLeft);
@@ -594,6 +686,7 @@ export function useRoom(socket, roomId, reconnectCount) {
     activeTabId,
     activeTab,
     ydocs: ydocs.current,
+    awarenesses: awarenesses.current,
     setActiveTabId,
     users,
     images,
