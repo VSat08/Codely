@@ -196,6 +196,7 @@ function Room() {
         onDeleteRoom={room.handleDeleteRoom}
         addToast={addToast}
         userCount={Object.keys(room.users).length}
+        users={room.users}
         activeTab={room.activeTab}
         tabs={room.tabs}
         onOpenLineRange={() => setShowLineRange(true)}
@@ -325,8 +326,13 @@ function Room() {
 
       {/* Toasts */}
       <div className="toast-container">
-        {toasts.map((t) => (
-          <Toast key={t.id} message={t.message} type={t.type} />
+        {toasts.map((t, index) => (
+          <Toast 
+            key={t.id} 
+            message={t.message} 
+            type={t.type} 
+            offset={toasts.length - 1 - index} 
+          />
         ))}
       </div>
     </div>

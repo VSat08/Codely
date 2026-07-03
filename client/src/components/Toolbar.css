@@ -127,23 +127,68 @@
   color: var(--accent);
 }
 
-.user-count {
+
+/* ── Avatar Group (Desktop) ── */
+.avatar-group {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-  padding: 4px 10px;
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-sm);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 100px;
+  transition: background var(--transition-fast);
 }
 
-.user-count-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--success);
+.avatar-group:hover {
+  background: var(--bg-hover);
 }
+
+.avatar-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.62rem;
+  font-weight: 700;
+  font-family: var(--font-ui), sans-serif;
+  color: white;
+  border: 2px solid var(--bg-secondary);
+  margin-left: -8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, margin-left 0.2s ease;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.avatar-circle:first-child {
+  margin-left: 0;
+}
+
+.avatar-group:hover .avatar-circle {
+  margin-left: -4px;
+}
+
+.avatar-group:hover .avatar-circle:first-child {
+  margin-left: 0;
+}
+
+.avatar-circle:hover {
+  transform: scale(1.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 10 !important;
+}
+
+.avatar-overflow {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-secondary);
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-shadow: none;
+}
+
+
 
 .conn-indicator {
   width: 8px;
@@ -281,18 +326,39 @@
     font-size: 0.95rem;
   }
 
-  .user-count {
-    padding: 3px 8px;
-    font-size: 0.75rem;
-  }
-
-  /* Hide desktop action buttons, show mobile minimal right */
-  .toolbar-actions-desktop {
+  /* Hide desktop action buttons + standalone avatar group on mobile */
+  .toolbar-actions-desktop,
+  .toolbar > .avatar-group {
     display: none;
   }
 
   .toolbar-actions-mobile {
     display: flex;
+  }
+
+  /* Compact mobile avatars */
+  .avatar-group-mobile {
+    padding: 1px 2px;
+  }
+
+  .avatar-group-mobile .avatar-circle {
+    width: 22px;
+    height: 22px;
+    font-size: 0.5rem;
+    border-width: 1.5px;
+    margin-left: -6px;
+  }
+
+  .avatar-group-mobile .avatar-circle:first-child {
+    margin-left: 0;
+  }
+
+  /* No hover-expand on mobile — too tight */
+  .avatar-group-mobile:hover .avatar-circle {
+    margin-left: -6px;
+  }
+  .avatar-group-mobile:hover .avatar-circle:first-child {
+    margin-left: 0;
   }
 
   /* ── Show Mobile Bottom Bar ── */
@@ -454,19 +520,28 @@
     font-size: 0.7rem;
   }
 
-  /* Show user count number clearly but compactly */
-  .user-count {
-    padding: 2px 6px;
-    font-size: 0.75rem;
-    gap: 4px;
-    background: var(--bg-tertiary);
-    font-weight: 500;
+  /* Even more compact avatars on very small screens */
+  .avatar-group-mobile .avatar-circle {
+    width: 20px;
+    height: 20px;
+    font-size: 0.45rem;
+    margin-left: -7px;
   }
 
-  .user-count-dot {
-    width: 6px;
-    height: 6px;
-    margin: 0;
+  .avatar-group-mobile .avatar-circle:first-child {
+    margin-left: 0;
+  }
+
+  /* Cap at 2 visible on very small screens */
+  .avatar-group-mobile .avatar-circle:nth-child(n+4) {
+    display: none;
+  }
+
+  .avatar-group-mobile:hover .avatar-circle {
+    margin-left: -7px;
+  }
+  .avatar-group-mobile:hover .avatar-circle:first-child {
+    margin-left: 0;
   }
 
   .conn-indicator {

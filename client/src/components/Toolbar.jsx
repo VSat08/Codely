@@ -25,6 +25,7 @@ function Toolbar({
   onDeleteRoom,
   addToast,
   userCount,
+  users,
   activeTab,
   tabs,
   onOpenLineRange,
@@ -44,6 +45,15 @@ function Toolbar({
   const mobileMenuRef = useRef(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [touchStartY, setTouchStartY] = useState(null);
+
+  const MAX_AVATARS = 4;
+  const getInitials = (name) => {
+    if (!name) return '?';
+    return name.substring(0, 2).toUpperCase();
+  };
+  const userEntries = users ? Object.entries(users) : [];
+  const visibleUsers = userEntries.slice(0, MAX_AVATARS);
+  const overflowCount = userEntries.length - MAX_AVATARS;
 
   // Platform detection
   const isMac = typeof navigator !== 'undefined' &&
@@ -232,6 +242,35 @@ function Toolbar({
           </div>
         </div>
 
+        {/* Avatar Group — placed before language so hover expansion doesn't shift it */}
+        <div
+          className="avatar-group"
+          onClick={onToggleSidebar}
+          title={`${userCount} user(s) online — click to toggle sidebar`}
+        >
+          {visibleUsers.map(([sid, user], index) => (
+            <div
+              key={sid}
+              className="avatar-circle"
+              style={{
+                backgroundColor: user.color || '#6366F1',
+                zIndex: MAX_AVATARS - index,
+              }}
+              title={user.name}
+            >
+              {getInitials(user.name)}
+            </div>
+          ))}
+          {overflowCount > 0 && (
+            <div
+              className="avatar-circle avatar-overflow"
+              style={{ zIndex: 0 }}
+            >
+              +{overflowCount}
+            </div>
+          )}
+        </div>
+
         {/* Center: Language */}
         <div className="toolbar-center">
           <div className="language-select-wrapper" ref={langMenuRef} style={{ position: 'relative' }}>
@@ -269,10 +308,6 @@ function Toolbar({
 
         {/* Right: Actions (hidden on mobile — moved to bottom bar) */}
         <div className="toolbar-right toolbar-actions-desktop">
-          <div className="user-count" title={`${userCount} user(s) online`}>
-            <span className="user-count-dot" />
-            {userCount}
-          </div>
 
           <button
             className="btn btn-icon btn-ghost"
@@ -383,11 +418,33 @@ function Toolbar({
           <span className={`conn-indicator ${isConnected ? 'on' : 'off'}`} title={isConnected ? 'Connected' : 'Disconnected'} />
         </div>
 
-        {/* Mobile: minimal right side — just user count + connection + copy */}
+        {/* Mobile: minimal right side — avatars + copy + connection */}
         <div className="toolbar-right toolbar-actions-mobile">
-          <div className="user-count" title={`${userCount} user(s) online`}>
-            <span className="user-count-dot" />
-            {userCount}
+          <div
+            className="avatar-group avatar-group-mobile"
+            onClick={onToggleSidebar}
+            title={`${userCount} user(s) online`}
+          >
+            {userEntries.slice(0, 3).map(([sid, user], index) => (
+              <div
+                key={sid}
+                className="avatar-circle"
+                style={{
+                  backgroundColor: user.color || '#6366F1',
+                  zIndex: 3 - index,
+                }}
+              >
+                {getInitials(user.name)}
+              </div>
+            ))}
+            {userEntries.length > 3 && (
+              <div
+                className="avatar-circle avatar-overflow"
+                style={{ zIndex: 0 }}
+              >
+                +{userEntries.length - 3}
+              </div>
+            )}
           </div>
           
           <button

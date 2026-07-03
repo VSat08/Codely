@@ -94,7 +94,8 @@
   right: var(--space-lg);
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  align-items: flex-end;
+  width: 320px;
   z-index: 1000;
   pointer-events: none;
 }
@@ -138,7 +139,6 @@
     left: auto;
     width: 90%;
     max-width: 360px;
-    align-items: stretch;
   }
 }
 

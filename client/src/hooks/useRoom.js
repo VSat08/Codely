@@ -418,8 +418,6 @@ export function useRoom(socket, roomId, reconnectCount) {
     socket.on('tab-added', onTabAdded);
     socket.on('tab-deleted', onTabDeleted);
     socket.on('tab-renamed', onTabRenamed);
-    socket.on('yjs-update', onYjsUpdate);
-    socket.on('yjs-awareness', onYjsAwareness);
     socket.on('tab-language-change', onTabLanguageChange);
     socket.on('user-joined', onUserJoined);
     socket.on('user-left', onUserLeft);
@@ -652,6 +650,10 @@ export function useRoom(socket, roomId, reconnectCount) {
     (newName) => {
       localStorage.setItem('codely-user-name', newName);
       if (socket) socket.emit('rename-user', { newName });
+      // Update local currentUser so the useEffect that propagates identity
+      // into all awareness instances fires, broadcasting the new name to
+      // other users' cursor tooltips.
+      setCurrentUser((prev) => prev ? { ...prev, name: newName } : prev);
     },
     [socket]
   );
