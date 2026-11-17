@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { AIChatMessage } from './AIChatMessage';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { AIChatMessage, AIChatCodeActionsContext } from './AIChatMessage';
 import { AIChatSettings } from './AIChatSettings';
+import { ErrorBoundary } from './ErrorBoundary';
 import { ACCEPTED_IMAGE_TYPES, ACCEPTED_FILE_EXTENSIONS } from '../utils/constants';
 import './AIChatPanel.css';
 
@@ -10,7 +11,19 @@ const SUGGESTIONS = [
   { icon: 'lightbulb', text: 'Explain how this works' },
   { icon: 'help', text: 'How do I fix this error' },
 ];
-export function AIChatPanel({ aiChat, activeTab, tabs, ydocs, onClose, addToast }) {
+export function AIChatPanel({
+  aiChat,
+  activeTab,
+  tabs,
+  ydocs,
+  onClose,
+  addToast,
+  onApplyCode,
+  onOpenNewTab,
+  width: externalWidth,
+  onWidthChange: externalOnWidthChange,
+  isResizing: externalIsResizing = false,
+}) {
   // Helper: read live code from Yjs doc (the source of truth), falling back to tab.code
   const getLiveCode = (tab) => {
     if (ydocs && ydocs[tab.id]) {
@@ -32,6 +45,7 @@ export function AIChatPanel({ aiChat, activeTab, tabs, ydocs, onClose, addToast 
     attachedFiles,
     attachedMedia,
     sendMessage,
+    editAndResubmitMessage,
     attachFile,
     removeAttachedFile,
     attachMedia,
@@ -51,12 +65,23 @@ export function AIChatPanel({ aiChat, activeTab, tabs, ydocs, onClose, addToast 
   const [showModeMenu, setShowModeMenu] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [dragType, setDragType] = useState(null); // 'tab' | 'file' | null
 
-  const [panelWidth, setPanelWidth] = useState(400);
+  const [internalWidth, setInternalWidth] = useState(() => {
+    const saved = localStorage.getItem('codely-ai-panel-width');
+    return saved ? parseInt(saved, 10) : 400;
+  });
+
+  const panelWidth = externalWidth !== undefined ? externalWidth : internalWidth;
+  const setPanelWidth = externalOnWidthChange || setInternalWidth;
+  const [internalIsResizing, setInternalIsResizing] = useState(false);
+  const isResizing = externalIsResizing || internalIsResizing;
 
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   const isDragging = useRef(false);
+  const dragStartX = useRef(null);
+  const panelElementRef = useRef(null);
   const modeMenuRef = useRef(null);
   const attachMenuRef = useRef(null);
   const imageInputRef = useRef(null);
@@ -64,24 +89,65 @@ export function AIChatPanel({ aiChat, activeTab, tabs, ydocs, onClose, addToast 
   const dragCounter = useRef(0);
   const chatContainerRef = useRef(null);
   const isUserScrolledUp = useRef(false);
+  const [showScrollBottom, setShowScrollBottom] = useState(false);
+  const isInitialMount = useRef(true);
+
+  // Instantly pin to the bottom before paint when opening the panel (no top-to-bottom scroll animation)
+  useLayoutEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, []);
 
   useEffect(() => {
-    if (!isUserScrolledUp.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (isInitialMount.current) {
+      // Re-verify bottom position after any initial child layouts settle without animating
+      const timer = setTimeout(() => {
+        if (chatContainerRef.current && !isUserScrolledUp.current) {
+          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+        isInitialMount.current = false;
+      }, 50);
+      return () => clearTimeout(timer);
     }
-  }, [messages]);
+
+    if (!isUserScrolledUp.current && chatContainerRef.current) {
+      if (isStreaming) {
+        // While streaming response tokens, pin instantly to prevent jumping/jitter
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      } else {
+        // When new message arrives while panel is open, smooth scroll
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [messages, isStreaming]);
 
   const handleScroll = () => {
     if (!chatContainerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-    isUserScrolledUp.current = scrollHeight - scrollTop - clientHeight > 50;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    isUserScrolledUp.current = distanceFromBottom > 60;
+    setShowScrollBottom(distanceFromBottom > 80);
+  };
+
+  const scrollToBottom = () => {
+    isUserScrolledUp.current = false;
+    setShowScrollBottom(false);
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + 'px';
+      textareaRef.current.style.height = Math.max(42, Math.min(textareaRef.current.scrollHeight, 160)) + 'px';
     }
   }, [input]);
 
@@ -100,25 +166,48 @@ export function AIChatPanel({ aiChat, activeTab, tabs, ydocs, onClose, addToast 
   }, []);
 
   const handleMouseDown = (e) => {
+    e.preventDefault();
     isDragging.current = true;
+    setInternalIsResizing(true);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const panelRect = panelElementRef.current?.getBoundingClientRect();
+    const rightEdge = panelRect ? panelRect.right : document.body.clientWidth;
+    dragStartX.current = { rightEdge };
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-    document.body.style.userSelect = 'none'; // Prevent text selection while dragging
+    document.addEventListener('touchmove', handleMouseMove);
+    document.addEventListener('touchend', handleMouseUp);
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
   };
 
   const handleMouseMove = (e) => {
     if (!isDragging.current) return;
-    const newWidth = document.body.clientWidth - e.clientX;
-    if (newWidth >= 300 && newWidth <= 800) {
-      setPanelWidth(newWidth);
-    }
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const rightEdge = dragStartX.current?.rightEdge ?? document.body.clientWidth;
+    const newWidth = Math.min(Math.max(280, rightEdge - clientX), window.innerWidth - 300);
+    setPanelWidth(newWidth);
   };
 
   const handleMouseUp = () => {
     isDragging.current = false;
+    setInternalIsResizing(false);
+    dragStartX.current = null;
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
+    document.removeEventListener('touchmove', handleMouseMove);
+    document.removeEventListener('touchend', handleMouseUp);
     document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+    setPanelWidth((w) => {
+      localStorage.setItem('codely-ai-panel-width', String(w));
+      return w;
+    });
+  };
+
+  const handleResetWidth = () => {
+    setPanelWidth(400);
+    localStorage.setItem('codely-ai-panel-width', '400');
   };
 
   const handleSend = () => {
@@ -161,7 +250,6 @@ export function AIChatPanel({ aiChat, activeTab, tabs, ydocs, onClose, addToast 
     }
     attachFile(getLiveCode(tab), tab.language, tab.name);
     setShowAttachMenu(false);
-    addToast(`📎 Attached ${tab.name}`, 'success');
   };
 
   const handleSuggestionClick = (text) => {
@@ -187,6 +275,23 @@ export function AIChatPanel({ aiChat, activeTab, tabs, ydocs, onClose, addToast 
     }
     // We send message passing the overridden files to fix race condition
     sendMessage(text, currentFiles);
+  };
+
+  const handleEditMessage = (messageIndex, newText) => {
+    if (!messages || messageIndex < 0 || messageIndex >= messages.length) return;
+    isUserScrolledUp.current = false;
+    const targetMsg = messages[messageIndex];
+    let freshFiles = [];
+    if (targetMsg?.attachedFiles && Array.isArray(targetMsg.attachedFiles) && targetMsg.attachedFiles.length > 0) {
+      freshFiles = targetMsg.attachedFiles.map(f => {
+        const tab = (tabsArray || []).find(t => t && t.name === f.fileName);
+        if (tab) {
+          return { ...f, code: getLiveCode(tab) };
+        }
+        return f;
+      });
+    }
+    editAndResubmitMessage(messageIndex, newText, freshFiles);
   };
 
   // ── Media Upload Handlers ──
@@ -222,8 +327,12 @@ export function AIChatPanel({ aiChat, activeTab, tabs, ydocs, onClose, addToast 
     e.preventDefault();
     e.stopPropagation();
     dragCounter.current++;
-    if (e.dataTransfer?.types?.includes('Files')) {
+    const types = e.dataTransfer?.types ? Array.from(e.dataTransfer.types) : [];
+    const isTab = types.includes('application/codely-tab');
+    const isFile = types.includes('Files');
+    if (isTab || isFile) {
       setIsDragOver(true);
+      setDragType(isTab ? 'tab' : 'file');
     }
   };
 
@@ -231,23 +340,91 @@ export function AIChatPanel({ aiChat, activeTab, tabs, ydocs, onClose, addToast 
     e.preventDefault();
     e.stopPropagation();
     dragCounter.current--;
-    if (dragCounter.current === 0) {
+    if (dragCounter.current <= 0) {
       setIsDragOver(false);
+      setDragType(null);
+      dragCounter.current = 0;
     }
   };
 
   const handleDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'copy';
+    }
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragOver(false);
+    setDragType(null);
     dragCounter.current = 0;
+
+    // 1. Check if dropped item is an editor tab
+    const tabDataStr = e.dataTransfer?.getData('application/codely-tab');
+    if (tabDataStr) {
+      try {
+        const tabInfo = JSON.parse(tabDataStr);
+        const targetTab = tabs[tabInfo.id] || tabsArray.find(t => t.id === tabInfo.id || t.name === tabInfo.name);
+        if (targetTab) {
+          handleSelectTabToAttach(targetTab);
+          setTimeout(() => textareaRef.current?.focus(), 50);
+          return;
+        }
+      } catch (err) {
+        console.error('Failed to parse dropped tab:', err);
+      }
+    }
+
+    // 2. Check if dropped items are files or images from the operating system
     if (e.dataTransfer?.files?.length) {
       handleMediaFiles(Array.from(e.dataTransfer.files));
+    }
+  };
+
+  // ── Clipboard Paste (Ctrl+V) Handler for Images & Files ──
+  const handlePaste = (e) => {
+    if (e.defaultPrevented) return;
+    const clipboardData = e.clipboardData || window.clipboardData;
+    if (!clipboardData) return;
+
+    const filesToAttach = [];
+
+    // 1. Check clipboard files (e.g. copied from Windows Explorer / macOS Finder)
+    if (clipboardData.files && clipboardData.files.length > 0) {
+      for (let i = 0; i < clipboardData.files.length; i++) {
+        filesToAttach.push(clipboardData.files[i]);
+      }
+    }
+
+    // 2. Check clipboard items (e.g. screenshots, browser copied images)
+    if (filesToAttach.length === 0 && clipboardData.items) {
+      for (const item of clipboardData.items) {
+        if (item.kind === 'file') {
+          const file = item.getAsFile();
+          if (file) {
+            filesToAttach.push(file);
+          }
+        }
+      }
+    }
+
+    // If any files/images were found in the clipboard, attach them!
+    if (filesToAttach.length > 0) {
+      // Prevent default only if we attached files, so plain text paste is untouched!
+      e.preventDefault();
+
+      const normalizedFiles = filesToAttach.map((file) => {
+        if (!file.name || file.name === 'blob' || file.name === 'image') {
+          const ext = file.type === 'image/jpeg' ? '.jpg' : file.type === 'image/webp' ? '.webp' : '.png';
+          return new File([file], `pasted-image-${Date.now()}${ext}`, { type: file.type || 'image/png' });
+        }
+        return file;
+      });
+
+      handleMediaFiles(normalizedFiles);
     }
   };
 
@@ -264,14 +441,22 @@ export function AIChatPanel({ aiChat, activeTab, tabs, ydocs, onClose, addToast 
 
   return (
     <div
-      className="ai-chat-panel"
+      ref={panelElementRef}
+      className={`ai-chat-panel ${isResizing ? 'resizing' : ''}`}
       style={{ width: `${panelWidth}px` }}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
+      onPaste={handlePaste}
     >
-      <div className="ai-resize-handle" onMouseDown={handleMouseDown}>
+      <div
+        className={`ai-resize-handle ${isResizing ? 'resizing' : ''}`}
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleMouseDown}
+        onDoubleClick={handleResetWidth}
+        title="Drag to resize AI sidebar (Double click to reset)"
+      >
         <div className="ai-resize-indicator" />
       </div>
 
@@ -279,9 +464,17 @@ export function AIChatPanel({ aiChat, activeTab, tabs, ydocs, onClose, addToast 
       {isDragOver && (
         <div className="ai-drop-overlay">
           <div className="ai-drop-overlay-content">
-            <span className="material-symbols-outlined">upload_file</span>
-            <span>Drop image or document</span>
-            <span className="ai-drop-hint">Images, PDFs, code files, and text documents</span>
+            <span className="material-symbols-outlined">
+              {dragType === 'tab' ? 'tab' : 'upload_file'}
+            </span>
+            <span>
+              {dragType === 'tab' ? 'Drop tab to attach as context' : 'Drop image or document'}
+            </span>
+            <span className="ai-drop-hint">
+              {dragType === 'tab'
+                ? 'File code will be attached as context for your prompt'
+                : 'Images, PDFs, code files, and text documents'}
+            </span>
           </div>
         </div>
       )}
@@ -366,14 +559,37 @@ export function AIChatPanel({ aiChat, activeTab, tabs, ydocs, onClose, addToast 
             </div>
           </div>
         ) : (
-          messages.map((msg, i) => (
-            <AIChatMessage key={i} message={msg} />
-          ))
+          <ErrorBoundary title="Error displaying chat messages">
+            <AIChatCodeActionsContext.Provider value={{ onApplyCode, onOpenNewTab }}>
+              {messages.map((msg, i) => (
+                <AIChatMessage
+                  key={msg?.id || `msg-${i}`}
+                  message={msg}
+                  messageIndex={i}
+                  isStreaming={isStreaming}
+                  onEditMessage={(newText) => handleEditMessage(i, newText)}
+                />
+              ))}
+            </AIChatCodeActionsContext.Provider>
+          </ErrorBoundary>
         )}
         <div ref={messagesEndRef} />
       </div>
 
       <div className="ai-chat-input-area">
+        {/* Centered Scroll to Bottom Button */}
+        {showScrollBottom && (
+          <button
+            type="button"
+            className="ai-scroll-bottom-btn"
+            onClick={scrollToBottom}
+            title="Scroll to bottom"
+            aria-label="Scroll to bottom"
+          >
+            <span className="material-symbols-outlined">arrow_downward</span>
+          </button>
+        )}
+
         {isStreaming && (
           <div className="ai-streaming-controls">
             <button className="btn btn-small" onClick={stopGeneration}>
@@ -459,68 +675,79 @@ export function AIChatPanel({ aiChat, activeTab, tabs, ydocs, onClose, addToast 
         )}
 
         <div className="ai-input-wrapper">
-          <div className="ai-attach-menu-wrapper" ref={attachMenuRef}>
-            <button
-              className="btn btn-icon btn-ghost ai-attach-btn"
-              title="Attach context"
-              onClick={() => setShowAttachMenu(!showAttachMenu)}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>add</span>
-            </button>
-            {showAttachMenu && (
-              <div className="ai-dropdown-menu ai-attach-dropdown">
-                {/* Code Tabs Section */}
-                <div className="ai-attach-section-header">Code Tabs</div>
-                {tabsArray.length === 0 ? (
-                  <div className="ai-dropdown-empty">No tabs open</div>
-                ) : (
-                  tabsArray.map(tab => (
-                    <button
-                      key={tab.id}
-                      className="ai-dropdown-item"
-                      onClick={() => handleSelectTabToAttach(tab)}
-                    >
-                      <span className="material-symbols-outlined">code</span> {tab.name}
-                    </button>
-                  ))
-                )}
-
-                {/* Upload Section */}
-                <div className="ai-attach-section-header">Upload</div>
-                <button
-                  className="ai-dropdown-item"
-                  onClick={() => { imageInputRef.current?.click(); setShowAttachMenu(false); }}
-                >
-                  <span className="material-symbols-outlined">image</span> Image
-                </button>
-                <button
-                  className="ai-dropdown-item"
-                  onClick={() => { docInputRef.current?.click(); setShowAttachMenu(false); }}
-                >
-                  <span className="material-symbols-outlined">upload_file</span> File
-                </button>
-              </div>
-            )}
-          </div>
           <textarea
             ref={textareaRef}
             className="ai-textarea"
-            placeholder="Ask a question(Shift + Enter for new line)"
+            placeholder="Ask a question (Shift + Enter for new line)..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             disabled={isStreaming}
-            rows={1}
+            rows={2}
           />
-          <button
-            className="btn btn-icon btn-primary ai-send-btn"
-            onClick={handleSend}
-            disabled={!input.trim() || isStreaming || hasLoadingMedia}
-            title={hasLoadingMedia ? 'Uploading files...' : 'Send message'}
-            style={{ borderRadius: '8px' }}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>send</span>
-          </button>
+          <div className="ai-input-toolbar">
+            <div className="ai-input-toolbar-left">
+              <div className="ai-attach-menu-wrapper" ref={attachMenuRef}>
+                <button
+                  type="button"
+                  className="ai-attach-btn"
+                  title="Add context"
+                  aria-label="Add context"
+                  onClick={() => setShowAttachMenu(!showAttachMenu)}
+                >
+                  <span className="material-symbols-outlined">add</span>
+                </button>
+                {showAttachMenu && (
+                  <div className="ai-dropdown-menu ai-attach-dropdown">
+                    {/* Code Tabs Section */}
+                    <div className="ai-attach-section-header">Code Tabs</div>
+                    {tabsArray.length === 0 ? (
+                      <div className="ai-dropdown-empty">No tabs open</div>
+                    ) : (
+                      tabsArray.map(tab => (
+                        <button
+                          key={tab.id}
+                          className="ai-dropdown-item"
+                          onClick={() => handleSelectTabToAttach(tab)}
+                        >
+                          <span className="material-symbols-outlined">code</span> {tab.name}
+                        </button>
+                      ))
+                    )}
+
+                    {/* Upload Section */}
+                    <div className="ai-attach-section-header">Upload</div>
+                    <button
+                      className="ai-dropdown-item"
+                      onClick={() => { imageInputRef.current?.click(); setShowAttachMenu(false); }}
+                    >
+                      <span className="material-symbols-outlined">image</span> Image
+                    </button>
+                    <button
+                      className="ai-dropdown-item"
+                      onClick={() => { docInputRef.current?.click(); setShowAttachMenu(false); }}
+                    >
+                      <span className="material-symbols-outlined">upload_file</span> File
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="ai-input-toolbar-right">
+              <button
+                type="button"
+                className="ai-send-btn"
+                onClick={handleSend}
+                disabled={!input.trim() || isStreaming || hasLoadingMedia}
+                title={hasLoadingMedia ? 'Uploading files...' : 'Send message (Enter)'}
+                aria-label="Send message"
+              >
+                <span className="material-symbols-outlined">arrow_forward</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

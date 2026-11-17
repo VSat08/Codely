@@ -1,5 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { LANGUAGES, getExtensionForLanguage } from '../utils/constants';
+import {
+  getRunMode,
+  isLanguageRunnable,
+  getRunButtonLabel,
+  getRunButtonIcon,
+  getRunTooltip
+} from '../utils/languageRunner';
 import JSZip from 'jszip';
 import './Toolbar.css';
 
@@ -33,6 +40,13 @@ function Toolbar({
   onOpenThemeModal,
   liveCode,
   ydocs,
+  onRunCode,
+  onStopCode,
+  isExecuting,
+  showTerminal,
+  showWebPreview,
+  onToggleTerminal,
+  onToggleWebPreview,
 }) {
   const [showMenu, setShowMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
@@ -45,6 +59,13 @@ function Toolbar({
   const mobileMenuRef = useRef(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [touchStartY, setTouchStartY] = useState(null);
+
+  const currentLanguage = language || activeTab?.language || 'javascript';
+  const runMode = getRunMode(currentLanguage);
+  const isRunnable = isLanguageRunnable(currentLanguage);
+  const runLabel = getRunButtonLabel(currentLanguage);
+  const runIcon = getRunButtonIcon(currentLanguage);
+  const runTooltip = getRunTooltip(currentLanguage, activeTab?.name);
 
   const MAX_AVATARS = 4;
   const getInitials = (name) => {
@@ -309,6 +330,34 @@ function Toolbar({
         {/* Right: Actions (hidden on mobile — moved to bottom bar) */}
         <div className="toolbar-right toolbar-actions-desktop">
 
+          {/* Unified Run Action (IDE style - matches theme, no loud colored pills) */}
+          <button
+            className={`btn btn-icon btn-ghost btn-toolbar-run ${isExecuting ? 'running' : ''}`}
+            onClick={isExecuting ? onStopCode : onRunCode}
+            disabled={!isRunnable}
+            title={isExecuting ? 'Stop Execution (Ctrl+C)' : runTooltip}
+            aria-label={isExecuting ? 'Stop Execution' : runTooltip}
+          >
+            {isExecuting ? (
+              <span className="material-symbols-outlined stop-icon" style={{ fontSize: '18px', color: '#ef4444' }}>
+                stop
+              </span>
+            ) : (
+              <span className="material-symbols-outlined run-icon" style={{ fontSize: '20px' }}>
+                {runIcon}
+              </span>
+            )}
+          </button>
+
+          {/* Terminal / Panel Toggle Button */}
+          <button
+            className={`btn btn-icon btn-ghost ${showTerminal ? 'active' : ''}`}
+            onClick={onToggleTerminal}
+            title={`Toggle Terminal (${modKey} + J)`}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>terminal</span>
+          </button>
+
           <button
             className="btn btn-icon btn-ghost"
             onClick={handleCopyCode}
@@ -360,6 +409,22 @@ function Toolbar({
             </button>
             {showMenu && (
               <div className="dropdown-menu">
+                {isRunnable && (
+                  <button
+                    className="dropdown-item"
+                    onClick={() => { onRunCode(); setShowMenu(false); }}
+                    disabled={isExecuting}
+                  >
+                    <span className="material-symbols-outlined dropdown-icon">{runIcon}</span> {runLabel} Code
+                  </button>
+                )}
+                <button
+                  className="dropdown-item"
+                  onClick={() => { onToggleTerminal(); setShowMenu(false); }}
+                >
+                  <span className="material-symbols-outlined dropdown-icon">terminal</span> Terminal Output
+                </button>
+                <div className="dropdown-divider" />
                 <button
                   className="dropdown-item"
                   onClick={() => { handleCopyCode(); setShowMenu(false); }}
@@ -466,6 +531,27 @@ function Toolbar({
           ═══════════════════════════════════════ */}
       <div className="mobile-action-bar">
         <div className="mobile-bar-inner">
+          {/* Run / Preview */}
+          <button
+            className={`mobile-bar-btn ${isExecuting ? 'active is-running' : ''}`}
+            onClick={isExecuting ? onStopCode : onRunCode}
+            disabled={!isRunnable}
+          >
+            <span className="material-symbols-outlined" style={isExecuting ? { color: '#ef4444' } : undefined}>
+              {isExecuting ? 'stop' : runIcon}
+            </span>
+            <span className="mobile-bar-label">{isExecuting ? 'Stop' : runLabel}</span>
+          </button>
+
+          {/* Terminal */}
+          <button
+            className={`mobile-bar-btn ${showTerminal ? 'active' : ''}`}
+            onClick={onToggleTerminal}
+          >
+            <span className="material-symbols-outlined">terminal</span>
+            <span className="mobile-bar-label">Console</span>
+          </button>
+
           {/* Screenshots */}
           <button
             className={`mobile-bar-btn ${showImagePanel ? 'active' : ''}`}
@@ -544,6 +630,22 @@ function Toolbar({
               </button>
             </div>
             <div className="mobile-sheet-content">
+              {isRunnable && (
+                <button
+                  className="dropdown-item sheet-item"
+                  onClick={() => { onRunCode(); setShowMobileMenu(false); }}
+                  disabled={isExecuting}
+                >
+                  <span className="material-symbols-outlined">{runIcon}</span> {runLabel} Code
+                </button>
+              )}
+              <button
+                className="dropdown-item sheet-item"
+                onClick={() => { onToggleTerminal(); setShowMobileMenu(false); }}
+              >
+                <span className="material-symbols-outlined">terminal</span> Terminal Output
+              </button>
+              <div className="dropdown-divider" />
               <button
                 className="dropdown-item sheet-item"
                 onClick={() => { handleCopyCode(); setShowMobileMenu(false); }}

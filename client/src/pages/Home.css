@@ -1030,7 +1030,7 @@
   margin-top: 8px;
 }
 
-.ai-message {
+.mock-ai-chat .ai-message {
   padding: 10px 16px;
   border-radius: 12px;
   font-size: 0.85rem;
@@ -1038,7 +1038,7 @@
   max-width: 90%;
 }
 
-.ai-message code {
+.mock-ai-chat .ai-message code {
   font-family: var(--font-mono);
   font-size: 0.8rem;
   background: rgba(255, 255, 255, 0.08);

@@ -24,6 +24,13 @@ function KeyboardShortcutsModal({ onClose }) {
 
   const shortcuts = [
     {
+      group: 'Code Execution & Runner',
+      items: [
+        { desc: 'Run / Preview Active Tab', keys: [modKey, 'Enter'] },
+        { desc: 'Toggle Terminal Console', keys: [modKey, 'J'] },
+      ]
+    },
+    {
       group: 'Tabs & Workspace',
       items: [
         { desc: 'Create New Tab', keys: [modKey, 'N'] },

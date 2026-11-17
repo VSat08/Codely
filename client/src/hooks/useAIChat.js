@@ -269,6 +269,47 @@ export function useAIChat(socket, roomId, userName) {
       setIsStreaming(true);
     };
 
+    const handleSharedChatEdit = ({ editIndex, sender, message, attachedFiles, attachedMedia, requestId }) => {
+      setMessages((prev) => {
+        if (editIndex < 0 || editIndex >= prev.length) return prev;
+        const currentTarget = prev[editIndex];
+        // If this is our own edit echoed back from the server, match on trimmed content or non-remote
+        if (currentTarget && !currentTarget.isRemote && (currentTarget.content === message || currentTarget.content?.trim() === (message || '').trim())) {
+          const updated = [...prev];
+          for (let i = updated.length - 1; i >= 0; i--) {
+            if (updated[i].role === 'ai' && updated[i].isStreaming && (!updated[i].requestId || updated[i].requestId === requestId)) {
+              updated[i] = { ...updated[i], requestId };
+              break;
+            }
+          }
+          return updated;
+        }
+
+        // Remote user edited: truncate up to editIndex and update
+        const truncated = prev.slice(0, editIndex);
+        const updatedUserMsg = {
+          id: `msg-shared-${editIndex}-${Date.now()}`,
+          role: 'user',
+          content: message,
+          sender,
+          isRemote: true,
+          attachedFiles: attachedFiles || null,
+          attachedMedia: attachedMedia || null,
+          requestId
+        };
+        const aiPlaceholder = {
+          id: `ai-shared-${Date.now()}-${requestId}`,
+          role: 'ai',
+          content: '',
+          statusText: 'Thinking...',
+          requestId,
+          isStreaming: true
+        };
+        return [...truncated, updatedUserMsg, aiPlaceholder];
+      });
+      setIsStreaming(true);
+    };
+
     const handleSharedChunk = ({ requestId, chunk }) => {
       handleChunk({ requestId, chunk });
     };
@@ -284,6 +325,7 @@ export function useAIChat(socket, roomId, userName) {
     socket.on('ai-response-error', handleError);
     
     socket.on('ai-chat-shared', handleSharedChat);
+    socket.on('ai-chat-shared-edit', handleSharedChatEdit);
     socket.on('ai-response-shared', handleSharedChunk);
 
     // Listen for provider rate-limit data from response headers (OpenAI/Claude)
@@ -313,6 +355,7 @@ export function useAIChat(socket, roomId, userName) {
       socket.off('ai-response-done', handleDone);
       socket.off('ai-response-error', handleError);
       socket.off('ai-chat-shared', handleSharedChat);
+      socket.off('ai-chat-shared-edit', handleSharedChatEdit);
       socket.off('ai-response-shared', handleSharedChunk);
       socket.off('ai-provider-limits', handleProviderLimits);
       socket.off('disconnect', handleDisconnect);
@@ -336,7 +379,10 @@ export function useAIChat(socket, roomId, userName) {
     const readyMedia = attachedMedia.filter(m => m.status === 'ready');
 
     // Add user message to local state immediately
+    const userMsgId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    const aiMsgId = `ai-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const newMsg = {
+      id: userMsgId,
       role: 'user',
       content: text,
       sender: userName,
@@ -350,11 +396,10 @@ export function useAIChat(socket, roomId, userName) {
       isRemote: false
     };
     
-    setMessages((prev) => [...prev, newMsg]);
-    setIsStreaming(true);
-    
     // Add placeholder for the AI response (requestId will be set by handleStart)
-    setMessages((prev) => [...prev, { role: 'ai', content: '', isStreaming: true }]);
+    const placeholderMsg = { id: aiMsgId, role: 'ai', content: '', isStreaming: true };
+    setMessages((prev) => [...prev, newMsg, placeholderMsg]);
+    setIsStreaming(true);
 
     socket.emit('ai-chat', {
       message: text,
@@ -382,6 +427,72 @@ export function useAIChat(socket, roomId, userName) {
 
     return null; // No error
   }, [socket, attachedFiles, attachedMedia, messages, aiMode, provider, aiModel, apiKey, roomId, userName]);
+
+  const editAndResubmitMessage = useCallback((messageIndex, newText, overrideAttachedFiles = undefined) => {
+    const trimmed = (newText || '').trim();
+    if (!socket || !trimmed || isStreaming) return;
+
+    if (messageIndex < 0 || messageIndex >= messages.length) return;
+    const targetMsg = messages[messageIndex];
+    if (!targetMsg || targetMsg.role !== 'user') return;
+
+    // Extract prior turns up to messageIndex
+    const priorHistory = messages.slice(0, messageIndex).slice(-12).map(m => ({
+      role: m?.role || 'user',
+      content: m?.content || ''
+    }));
+
+    // Ensure filesToUse and mediaToUse are ALWAYS valid arrays, never null/undefined
+    const filesToUse = Array.isArray(overrideAttachedFiles)
+      ? overrideAttachedFiles
+      : (Array.isArray(targetMsg.attachedFiles) ? targetMsg.attachedFiles : []);
+    const mediaToUse = Array.isArray(targetMsg.attachedMedia) ? targetMsg.attachedMedia : [];
+
+    const updatedUserMsg = {
+      ...targetMsg,
+      id: targetMsg.id || `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      content: trimmed,
+      attachedFiles: filesToUse.length > 0 ? filesToUse : null,
+      isRemote: false,
+    };
+
+    const aiPlaceholder = {
+      id: `ai-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      role: 'ai',
+      content: '',
+      statusText: 'Thinking...',
+      isStreaming: true
+    };
+
+    // 1. Truncate messages and commit to state
+    setMessages((prev) => {
+      const idx = (messageIndex >= 0 && messageIndex < prev.length) ? messageIndex : prev.length - 1;
+      const truncated = prev.slice(0, idx);
+      return [...truncated, updatedUserMsg, aiPlaceholder];
+    });
+    setIsStreaming(true);
+
+    // 2. Emit to socket outside of setMessages updater (safe from React 18 updater double-runs)
+    socket.emit('ai-chat', {
+      message: trimmed,
+      editIndex: messageIndex,
+      attachedFiles: filesToUse,
+      attachedMedia: mediaToUse.map(m => ({
+        name: m.name,
+        mimeType: m.mimeType,
+        base64: m.base64
+      })),
+      history: priorHistory,
+      mode: aiMode,
+      provider,
+      aiModel,
+      apiKey,
+      roomId,
+      userName
+    });
+
+    return null;
+  }, [socket, isStreaming, messages, aiMode, provider, aiModel, apiKey, roomId, userName]);
 
   const attachFile = useCallback((code, language, fileName) => {
     setAttachedFiles((prev) => {
@@ -522,6 +633,7 @@ export function useAIChat(socket, roomId, userName) {
     attachedFiles,
     attachedMedia,
     sendMessage,
+    editAndResubmitMessage,
     attachFile,
     removeAttachedFile,
     attachMedia,

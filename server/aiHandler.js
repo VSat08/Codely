@@ -145,7 +145,7 @@ function setupAIHandlers(io) {
 
   io.on('connection', (socket) => {
     socket.on('ai-chat', async (payload) => {
-      const { message, attachedFiles, attachedMedia, history, mode, provider, aiModel, apiKey, roomId, userName } = payload;
+      const { message, attachedFiles, attachedMedia, history, mode, provider, aiModel, apiKey, roomId, userName, editIndex } = payload;
       const requestId = Math.random().toString(36).substring(7);
 
       console.log(`\n======================================================`);
@@ -236,12 +236,24 @@ ${truncateCode(file.code)}
 
       // Shared mode broadcast
       if (mode === 'shared' && roomId) {
-        io.to(roomId).emit('ai-chat-shared', {
-          sender: userName || 'Anonymous',
-          message: safeMessage,
-          attachedFiles: attachedFiles || [],
-          requestId
-        });
+        if (typeof editIndex === 'number') {
+          io.to(roomId).emit('ai-chat-shared-edit', {
+            editIndex,
+            sender: userName || 'Anonymous',
+            message: safeMessage,
+            attachedFiles: attachedFiles || [],
+            attachedMedia: attachedMedia || [],
+            requestId
+          });
+        } else {
+          io.to(roomId).emit('ai-chat-shared', {
+            sender: userName || 'Anonymous',
+            message: safeMessage,
+            attachedFiles: attachedFiles || [],
+            attachedMedia: attachedMedia || [],
+            requestId
+          });
+        }
       }
 
       // Combine all text context into a single coherent prompt
@@ -611,7 +623,11 @@ ${truncateCode(file.code)}
             friendlyError = error.message;
           }
         }
-        socket.emit('ai-response-error', { requestId, error: friendlyError });
+        if (mode === 'shared' && roomId) {
+          io.to(roomId).emit('ai-response-error', { requestId, error: friendlyError });
+        } else {
+          socket.emit('ai-response-error', { requestId, error: friendlyError });
+        }
       } finally {
         activeStreams.delete(requestId);
       }

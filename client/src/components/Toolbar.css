@@ -127,6 +127,44 @@
   color: var(--accent);
 }
 
+/* ── Unified Run Button (Monochromatic IDE Style - 100% Consistent with Toolbar Icons) ── */
+.btn-toolbar-run {
+  position: relative;
+  transition: all var(--transition-fast);
+}
+
+.btn-toolbar-run .run-icon {
+  font-size: 20px;
+  color: var(--text-secondary);
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.btn-toolbar-run:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.btn-toolbar-run:hover:not(:disabled) .run-icon {
+  color: var(--text-primary);
+  transform: scale(1.08);
+}
+
+.btn-toolbar-run:active:not(:disabled) .run-icon {
+  transform: scale(0.95);
+}
+
+.btn-toolbar-run:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn-toolbar-run:disabled .run-icon {
+  color: var(--text-tertiary);
+}
+
+.btn-toolbar-run.running {
+  cursor: wait;
+}
+
 
 /* ── Avatar Group (Desktop) ── */
 .avatar-group {

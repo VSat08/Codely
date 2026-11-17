@@ -49,3 +49,34 @@ export function getExtensionForLanguage(language) {
   };
   return map[language] || 'txt';
 }
+
+export function normalizeLanguage(langStr) {
+  if (!langStr) return 'plaintext';
+  const clean = langStr.toLowerCase().trim();
+  const aliasMap = {
+    py: 'python',
+    js: 'javascript',
+    jsx: 'javascript',
+    ts: 'typescript',
+    tsx: 'typescript',
+    rs: 'rust',
+    rb: 'ruby',
+    sh: 'shell',
+    bash: 'shell',
+    zsh: 'shell',
+    cs: 'csharp',
+    'c#': 'csharp',
+    'c++': 'cpp',
+    cpp: 'cpp',
+    c: 'c',
+    golang: 'go',
+    go: 'go',
+    yml: 'yaml',
+    yaml: 'yaml',
+    md: 'markdown',
+    docker: 'dockerfile',
+  };
+  if (aliasMap[clean]) return aliasMap[clean];
+  const found = LANGUAGES.find(l => l.value === clean);
+  return found ? found.value : clean;
+}

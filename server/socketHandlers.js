@@ -25,18 +25,22 @@ function setupSocketHandlers(io) {
       const roomId = customId || roomStore.generateId(8);
 
       if (customId && roomStore.roomExists(customId)) {
-        return callback({ error: 'Room ID already exists. Try a different name.' });
+        if (typeof callback === 'function') callback({ error: 'Room ID already exists. Try a different name.' });
+        return;
       }
 
       const creatorToken = roomStore.generateId(32);
       roomStore.createRoom(roomId, language || 'javascript', creatorToken);
-      callback({ roomId, creatorToken });
+      if (typeof callback === 'function') callback({ roomId, creatorToken });
     });
 
     // ── Join Room ──
     socket.on('join-room', (data, callback) => {
       const { roomId, userName, userId } = data || {};
-      if (!roomId) return callback({ error: 'Room ID required' });
+      if (!roomId) {
+        if (typeof callback === 'function') callback({ error: 'Room ID required' });
+        return;
+      }
 
       // Auto-create room if accessed via direct URL
       if (!roomStore.getRoom(roomId)) {
@@ -63,10 +67,12 @@ function setupSocketHandlers(io) {
 
       // Send full room state to the joiner
       const state = roomStore.getRoomState(roomId);
-      callback({ 
-        state, 
-        user
-      });
+      if (typeof callback === 'function') {
+        callback({ 
+          state, 
+          user
+        });
+      }
 
       // Notify others
       socket.to(roomId).emit('user-joined', { socketId: socket.id, user });

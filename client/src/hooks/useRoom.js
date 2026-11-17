@@ -587,6 +587,13 @@ export function useRoom(socket, roomId, reconnectCount) {
   }, [socket]);
 
   const handleRenameTab = useCallback((tabId, newName, newLanguage) => {
+    setTabs((prev) => {
+      if (!prev[tabId]) return prev;
+      return {
+        ...prev,
+        [tabId]: { ...prev[tabId], name: newName, language: newLanguage || prev[tabId]?.language }
+      };
+    });
     return new Promise((resolve, reject) => {
       if (!socket) return reject('Not connected');
       socket.emit('rename-tab', { tabId, newName, newLanguage }, (res) => {

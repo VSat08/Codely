@@ -70,6 +70,9 @@
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
   --transition-slow: 350ms ease;
+
+  /* Mobile Floating Bar Clearance */
+  --mobile-nav-clearance: calc(78px + env(safe-area-inset-bottom, 0px));
 }
 
 html, body, #root {
@@ -207,8 +210,12 @@ input, select {
   width: 100%;
 }
 
-input:focus, select:focus {
+input:focus, select:focus, textarea:focus,
+input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: none;
+}
+
+input:focus, select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-subtle);
 }
@@ -277,4 +284,35 @@ select {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ── Problem Line Jump Flash Highlight ── */
+.problem-line-highlight {
+  background: rgba(239, 68, 68, 0.22) !important;
+  border-left: 3px solid #ef4444 !important;
+  animation: problemFlash 1.5s ease-out forwards;
+}
+
+@keyframes problemFlash {
+  0% { background: rgba(239, 68, 68, 0.4); }
+  60% { background: rgba(239, 68, 68, 0.18); }
+  100% { background: transparent; }
+}
+
+/* ── Monaco Editor Floating & Hover Widgets ── */
+.monaco-editor .overflowingContentWidgets {
+  position: fixed !important;
+  z-index: 1000 !important;
+}
+
+.monaco-editor .monaco-hover,
+.monaco-editor .zone-widget,
+.monaco-editor .suggest-widget,
+.monaco-editor .parameter-hints-widget,
+.monaco-editor .rename-box {
+  z-index: 1001 !important;
+}
+
+.monaco-editor .decorationsOverviewRuler {
+  border-radius: 0 0 2px 2px;
 }

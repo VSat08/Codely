@@ -9,8 +9,10 @@ import { CUSTOM_THEMES } from '../utils/monacoThemes';
  * Monaco Editor wrapper.
  * Handles local edits and applies remote changes using Yjs and CRDTs (y-monaco).
  */
-function CodeEditor({ ydoc, awareness, language, theme, tabId }) {
+function CodeEditor({ ydoc, awareness, language, theme, tabId, problems, activeTabName }) {
   const editorRef = useRef(null);
+  const monacoRef = useRef(null);
+  const flashDecorationsRef = useRef([]);
   const bindingRef = useRef(null);
   const decorationsRef = useRef([]);
   const [awarenessStates, setAwarenessStates] = useState(new Map());
@@ -25,6 +27,7 @@ function CodeEditor({ ydoc, awareness, language, theme, tabId }) {
 
   const handleEditorMount = useCallback((editor, monaco) => {
     editorRef.current = editor;
+    monacoRef.current = monaco;
 
     // Set editor options
     editor.updateOptions({
@@ -38,18 +41,36 @@ function CodeEditor({ ydoc, awareness, language, theme, tabId }) {
       cursorBlinking: 'smooth',
       cursorSmoothCaretAnimation: 'on',
       smoothScrolling: true,
-      padding: { top: 24, bottom: window.innerWidth <= 768 ? 88 : 16 },
+      padding: { top: 24, bottom: typeof window !== 'undefined' && window.innerWidth <= 768 ? 88 : 16 },
       wordWrap: 'on',
       tabSize: 2,
       automaticLayout: true,
+      fixedOverflowWidgets: true,
+      overviewRulerBorder: false,
     });
 
     // Intercept our global shortcuts before Monaco swallows them
     editor.onKeyDown((e) => {
+      const isCmdOrCtrl = e.browserEvent.ctrlKey || e.browserEvent.metaKey;
+      if (isCmdOrCtrl && e.browserEvent.key.toLowerCase() === 'enter') {
+        window.dispatchEvent(new KeyboardEvent('keydown', {
+          key: 'Enter',
+          code: 'Enter',
+          ctrlKey: e.browserEvent.ctrlKey,
+          metaKey: e.browserEvent.metaKey,
+          altKey: e.browserEvent.altKey,
+          shiftKey: e.browserEvent.shiftKey,
+          bubbles: true,
+          cancelable: true
+        }));
+        e.preventDefault();
+        return;
+      }
+
       if (e.altKey) {
         const key = e.browserEvent.key.toLowerCase();
         // List of our global shortcut keys
-        if (['n', 'w', 'r', 'e', '1', '2', '3', '4', 't', '/'].includes(key)) {
+        if (['n', 'w', 'r', 'e', '1', '2', '3', '4', 't', '/', 'enter', 'j'].includes(key)) {
           // Re-dispatch the event to the window so Room.jsx can catch it
           window.dispatchEvent(new KeyboardEvent('keydown', {
             key: e.browserEvent.key,
@@ -232,6 +253,123 @@ function CodeEditor({ ydoc, awareness, language, theme, tabId }) {
     };
   }, [ydoc, awareness, tabId, isEditorReady]);
 
+  // Synchronize structured diagnostics (red/yellow squigglies) with Monaco
+  useEffect(() => {
+    if (!editorRef.current || !monacoRef.current) return;
+    const model = editorRef.current.getModel();
+    if (!model) return;
+
+    if (!problems || problems.length === 0) {
+      monacoRef.current.editor.setModelMarkers(model, 'codely-diagnostics', []);
+      return;
+    }
+
+    const currentTabFileName = activeTabName || '';
+    const relevantProblems = problems.filter((p) => {
+      if (!p.file) return true;
+      if (!currentTabFileName) return true;
+      return p.file.toLowerCase() === currentTabFileName.toLowerCase();
+    });
+
+    const markers = relevantProblems.map((p) => {
+      const line = Math.max(1, p.line || 1);
+      const col = Math.max(1, p.column || 1);
+      const maxCol = model.getLineMaxColumn(line) || 100;
+      return {
+        startLineNumber: line,
+        startColumn: col,
+        endLineNumber: line,
+        endColumn: p.endColumn ? Math.min(maxCol, p.endColumn) : maxCol,
+        message: p.message,
+        severity:
+          p.severity === 'warning'
+            ? monacoRef.current.MarkerSeverity.Warning
+            : monacoRef.current.MarkerSeverity.Error,
+      };
+    });
+
+    monacoRef.current.editor.setModelMarkers(model, 'codely-diagnostics', markers);
+  }, [problems, activeTabName]);
+
+  // Listen for 1-click line jump from Problems tab
+  useEffect(() => {
+    const handleNavigate = (e) => {
+      const { line, column } = e.detail || {};
+      if (!editorRef.current || !line) return;
+      const editor = editorRef.current;
+      const targetCol = column || 1;
+      editor.revealPositionInCenter({ lineNumber: line, column: targetCol });
+      editor.setPosition({ lineNumber: line, column: targetCol });
+      editor.focus();
+
+      // Flash highlight the line for 1.5 seconds
+      if (monacoRef.current) {
+        flashDecorationsRef.current = editor.deltaDecorations(
+          flashDecorationsRef.current,
+          [
+            {
+              range: new monacoRef.current.Range(line, 1, line, 1),
+              options: {
+                isWholeLine: true,
+                className: 'problem-line-highlight',
+              },
+            },
+          ]
+        );
+        setTimeout(() => {
+          if (editorRef.current) {
+            flashDecorationsRef.current = editorRef.current.deltaDecorations(
+              flashDecorationsRef.current,
+              []
+            );
+          }
+        }, 1500);
+      }
+    };
+
+    const handleInsertCode = (e) => {
+      const { code } = e.detail || {};
+      if (!editorRef.current || !monacoRef.current || typeof code !== 'string') return;
+      const editor = editorRef.current;
+      const monaco = monacoRef.current;
+      const model = editor.getModel();
+      if (!model) return;
+
+      const selection = editor.getSelection();
+      const currentText = model.getValue();
+      const trimmed = currentText.trim();
+      const isEmptyOrTemplate = !trimmed ||
+        trimmed.startsWith('// Start coding') ||
+        trimmed.startsWith('// Welcome to Codely') ||
+        trimmed.startsWith('/* Welcome to Codely');
+
+      let range;
+      if (isEmptyOrTemplate) {
+        range = model.getFullModelRange();
+      } else if (selection && !selection.isEmpty()) {
+        range = selection;
+      } else {
+        const pos = editor.getPosition() || model.getPositionAt(currentText.length);
+        range = new monaco.Range(pos.lineNumber, pos.column, pos.lineNumber, pos.column);
+      }
+
+      editor.executeEdits('codely-ai-apply', [{
+        range,
+        text: code,
+        forceMoveMarkers: true,
+      }]);
+      editor.pushUndoStop();
+      editor.focus();
+    };
+
+    window.addEventListener('codely:navigate-to-line', handleNavigate);
+    window.addEventListener('codely:insert-code', handleInsertCode);
+    return () => {
+      window.removeEventListener('codely:navigate-to-line', handleNavigate);
+      window.removeEventListener('codely:insert-code', handleInsertCode);
+    };
+  }, []);
+
   // Generate dynamic CSS for remote cursors to show initials on hover
   const getInitials = (name) => {
     if (!name) return '?';
@@ -330,10 +468,12 @@ function CodeEditor({ ydoc, awareness, language, theme, tabId }) {
           fontFamily: "'JetBrains Mono', monospace",
           minimap: { enabled: false },
           scrollBeyondLastLine: false,
-          padding: { top: 16 },
+          padding: { top: 24, bottom: typeof window !== 'undefined' && window.innerWidth <= 768 ? 88 : 16 },
           wordWrap: 'on',
           tabSize: 2,
           automaticLayout: true,
+          fixedOverflowWidgets: true,
+          overviewRulerBorder: false,
         }}
       />
     </div>

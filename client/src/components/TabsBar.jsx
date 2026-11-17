@@ -146,9 +146,23 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
               key={tab.id}
               ref={isActive ? activeTabRef : null}
               className={`tab ${isActive ? 'active' : ''}`}
+              draggable={!isEditing}
+              onDragStart={(e) => {
+                if (isEditing) {
+                  e.preventDefault();
+                  return;
+                }
+                e.dataTransfer.setData('application/codely-tab', JSON.stringify({ id: tab.id, name: tab.name }));
+                e.dataTransfer.setData('text/plain', tab.name);
+                e.dataTransfer.effectAllowed = 'copy';
+                e.currentTarget.classList.add('tab-dragging');
+              }}
+              onDragEnd={(e) => {
+                e.currentTarget.classList.remove('tab-dragging');
+              }}
               onClick={() => onTabChange(tab.id)}
               onDoubleClick={(e) => handleStartEdit(tab, e)}
-              title={tab.name || 'Double click to rename'}
+              title={tab.name ? `${tab.name} • Drag to AI Chat to attach` : 'Double click to rename • Drag to AI Chat to attach'}
             >
               {isEditing ? (
                 <input
@@ -162,6 +176,8 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
                     if (e.key === 'Escape') setEditingTabId(null);
                   }}
                   onClick={(e) => e.stopPropagation()}
+                  draggable={false}
+                  onDragStart={(e) => e.stopPropagation()}
                 />
               ) : (
                 <span className="tab-name truncate">{tab.name}</span>
@@ -169,11 +185,14 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
               
               {!isEditing && tabCount > 1 && (
                 <button
-                  className="btn btn-icon btn-ghost tab-close-btn"
+                  type="button"
+                  className="tab-close-btn"
                   onClick={(e) => handleDelete(tab.id, e)}
                   title="Close tab"
+                  draggable={false}
+                  onDragStart={(e) => e.stopPropagation()}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>close</span>
                 </button>
               )}
             </div>
