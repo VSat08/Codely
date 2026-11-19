@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   display: flex;
@@ -15,23 +15,23 @@
 }
 
 .theme-modal {
-  background: rgba(13, 17, 23, 0.65); /* Glass base */
+  background: var(--bg-elevated);
   backdrop-filter: blur(24px) saturate(150%);
   -webkit-backdrop-filter: blur(24px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px; /* Smoother radius */
+  border: 1px solid var(--border-primary);
+  border-radius: 16px;
   width: 90%;
   max-width: 500px;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.05) inset;
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-primary);
   overflow: hidden;
-  animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
 }
 
 .theme-modal-header {
-  padding: 24px 24px 16px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 20px 24px 16px 24px;
+  border-bottom: 1px solid var(--border-primary);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -39,7 +39,7 @@
 
 .theme-modal-header h2 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 600;
   color: var(--text-primary);
   display: flex;
@@ -48,27 +48,28 @@
 }
 
 .theme-modal-content {
-  padding: 8px 24px 24px 24px;
+  padding: 8px 20px 20px 20px;
   max-height: 60vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
+
 /* Custom Scrollbar for Modal */
 .theme-modal-content::-webkit-scrollbar {
   width: 6px;
 }
 .theme-modal-content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-secondary);
   border-radius: 4px;
 }
 
 .theme-category {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-tertiary);
   margin-top: 12px;
   margin-bottom: 4px;
   padding-left: 4px;
@@ -79,17 +80,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.02);
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .theme-option:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--bg-hover);
+  border-color: var(--border-secondary);
 }
 
 .theme-option.active {
@@ -107,15 +108,15 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: 1.5px solid var(--border-secondary);
   flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-sm);
 }
 
 .theme-name {
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-size: 0.92rem;
 }
 
 .theme-option.active .theme-name {
@@ -124,12 +125,12 @@
 }
 
 .theme-modal-footer {
-  padding: 16px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 14px 24px;
+  border-top: 1px solid var(--border-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-secondary);
 }
 
 .theme-modal-hint {

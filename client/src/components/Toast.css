@@ -10,11 +10,11 @@
   border-radius: 10px;
   font-size: 0.85rem;
   font-weight: 500;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-lg);
   pointer-events: auto;
-  background: #141416 !important;
-  color: #f1f5f9 !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-secondary) !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   position: relative;

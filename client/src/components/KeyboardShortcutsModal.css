@@ -5,7 +5,7 @@
 .shortcuts-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: 9999;
@@ -17,26 +17,26 @@
 }
 
 .shortcuts-modal-content {
-  background: rgba(13, 17, 23, 0.65); /* Glass base */
+  background: var(--bg-elevated);
   backdrop-filter: blur(24px) saturate(150%);
   -webkit-backdrop-filter: blur(24px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px; /* Smoother radius */
+  border: 1px solid var(--border-primary);
+  border-radius: 16px;
   width: 100%;
   max-width: 520px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.05) inset;
-  animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-primary);
+  animation: slideInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .shortcuts-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 24px 16px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 20px 24px 16px 24px;
+  border-bottom: 1px solid var(--border-primary);
   gap: var(--space-sm);
 }
 
@@ -69,17 +69,18 @@
   flex-direction: column;
   gap: var(--space-lg);
 }
+
 /* Custom Scrollbar for Modal */
 .shortcuts-body::-webkit-scrollbar {
   width: 6px;
 }
 .shortcuts-body::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-secondary);
   border-radius: 4px;
 }
 
 .shortcuts-group h3 {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--text-secondary);
@@ -91,8 +92,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .shortcut-row:last-child {
@@ -100,7 +101,7 @@
 }
 
 .shortcut-desc {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--text-primary);
 }
 
@@ -123,19 +124,11 @@ kbd {
   font-weight: 600;
   line-height: 1;
   color: var(--text-primary);
-  background: linear-gradient(180deg, 
-    rgba(255,255,255,0.08) 0%, 
-    rgba(255,255,255,0.02) 100%
-  );
-  background-color: var(--bg-elevated);
+  background-color: var(--bg-tertiary);
   border: 1px solid var(--border-secondary);
-  border-bottom-width: 3px;
-  border-bottom-color: rgba(0,0,0,0.4);
+  border-bottom-width: 2.5px;
   border-radius: 6px;
-  box-shadow: 
-    0 1px 0 rgba(0,0,0,0.3),
-    0 -1px 0 rgba(255,255,255,0.05) inset,
-    0 0 0 1px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow-sm);
   text-transform: uppercase;
   letter-spacing: 0.3px;
   transition: transform 80ms ease, box-shadow 80ms ease;
@@ -143,22 +136,13 @@ kbd {
 
 kbd:hover {
   transform: translateY(1px);
-  border-bottom-width: 2px;
-  box-shadow: 
-    0 0 0 rgba(0,0,0,0.3),
-    0 -1px 0 rgba(255,255,255,0.05) inset,
-    0 0 0 1px rgba(0,0,0,0.15);
+  border-bottom-width: 1.5px;
 }
 
-/* Modifier keys get a subtle accent tint */
+/* Modifier keys get subtle accent tint */
 kbd.kbd-modifier {
-  background: linear-gradient(180deg,
-    rgba(59, 130, 246, 0.12) 0%,
-    rgba(59, 130, 246, 0.04) 100%
-  );
-  background-color: var(--bg-elevated);
-  border-color: rgba(59, 130, 246, 0.25);
-  border-bottom-color: rgba(59, 130, 246, 0.35);
+  background-color: var(--accent-subtle);
+  border-color: var(--accent);
   color: var(--accent);
   font-size: 0.82rem;
   min-width: 32px;
@@ -173,21 +157,20 @@ kbd.kbd-key {
   color: var(--text-tertiary);
   font-size: 0.75rem;
   font-weight: 700;
-  opacity: 0.6;
 }
 
 /* ── Footer ── */
 .shortcuts-footer {
-  padding: 16px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 14px 24px;
+  border-top: 1px solid var(--border-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-secondary);
 }
 
 .shortcuts-hint {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--text-tertiary);
   letter-spacing: 0.2px;
 }

@@ -250,10 +250,10 @@
   position: absolute;
   top: calc(100% + 5px);
   z-index: 9999;
-  background: #18181b;
+  background: var(--bg-elevated);
   border: 1px solid var(--border-primary);
   border-radius: 6px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow-lg);
   padding: 4px 0;
   min-width: 210px;
   animation: dropdownPop 0.12s cubic-bezier(0.16, 1, 0.3, 1);
@@ -653,7 +653,7 @@
    VIEW 1: TERMINAL
    ══════════════════════════════════════════════════ */
 .terminal-view {
-  background: #0a0a0a;
+  background: var(--bg-primary);
 }
 
 .terminal-output-container {
@@ -677,23 +677,23 @@
 }
 
 .log-stdout {
-  color: #e6edf3;
+  color: var(--text-primary);
   display: inline;
 }
 
 .log-stderr {
-  color: #f87171;
+  color: #ef4444;
   display: inline;
 }
 
 .log-stdin-echo {
-  color: #38bdf8;
+  color: var(--accent);
   font-weight: 600;
   display: inline;
 }
 
 .log-system-msg {
-  color: #71717a;
+  color: var(--text-tertiary);
   font-style: italic;
   display: inline;
 }
@@ -828,8 +828,8 @@
 
 .terminal-interactive-input {
   flex: 1;
-  background: #141414;
-  color: #fafafa;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
   border: 1px solid var(--border-primary);
   border-radius: 4px;
   padding: 5px 10px;
@@ -879,7 +879,7 @@
    VIEW 2: PROBLEMS (VS Code / Antigravity Style)
    ══════════════════════════════════════════════════ */
 .problems-view {
-  background: #0a0a0a;
+  background: var(--bg-primary);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -938,7 +938,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #111111;
+  background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
   border-radius: 4px;
   padding: 2px 8px;
@@ -1105,7 +1105,7 @@
   font-size: 10px;
   font-family: var(--font-mono);
   color: var(--text-tertiary);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-hover);
   padding: 1px 4px;
   border-radius: 3px;
   flex-shrink: 0;
@@ -1129,7 +1129,7 @@
   min-height: 0;
   width: 100%;
   height: 100%;
-  background: #0a0a0a;
+  background: var(--bg-primary);
   display: flex;
   flex-direction: column;
   align-items: center;

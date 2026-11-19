@@ -56,9 +56,13 @@ function Room() {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showThemeModal, setShowThemeModal] = useState(false);
   const [editorTheme, setEditorTheme] = useState(
-    localStorage.getItem('codely-editor-theme') || 'vs-dark'
+    () => localStorage.getItem('codely-editor-theme') || 'vs-dark'
   );
   const [toasts, setToasts] = useState([]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', editorTheme);
+  }, [editorTheme]);
 
   const aiChat = useAIChat(socket, roomId, room.currentUser?.name);
 
@@ -87,6 +91,7 @@ function Room() {
   const handleThemeChange = (newTheme) => {
     setEditorTheme(newTheme);
     localStorage.setItem('codely-editor-theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
     addToast('Theme applied', 'success');
   };
 

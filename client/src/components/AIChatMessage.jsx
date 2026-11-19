@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const getInitials = (name) => {
   if (!name) return '?';
@@ -112,7 +112,12 @@ const CodeBlockRenderer = ({ node, className, children, ...props }) => {
           </div>
         </div>
         <SyntaxHighlighter
-          style={vscDarkPlus}
+          style={
+            typeof document !== 'undefined' && (
+              document.documentElement.getAttribute('data-theme')?.includes('light') ||
+              document.documentElement.getAttribute('data-theme') === 'vs'
+            ) ? vs : vscDarkPlus
+          }
           language={lang}
           PreTag="div"
           customStyle={{
@@ -120,8 +125,8 @@ const CodeBlockRenderer = ({ node, className, children, ...props }) => {
             padding: '12px 14px',
             borderRadius: '0 0 8px 8px',
             fontSize: '0.82rem',
-            background: '#141414',
-            backgroundColor: '#141414',
+            background: 'var(--bg-tertiary)',
+            backgroundColor: 'var(--bg-tertiary)',
             lineHeight: '1.6',
           }}
           codeTagProps={{

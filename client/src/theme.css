@@ -1,0 +1,426 @@
+/* ══════════════════════════════════════════════════
+   CODELY — Comprehensive Overall Application Theming
+   Authentic palettes matching Monaco Editor themes
+   ══════════════════════════════════════════════════ */
+
+/* ── Smooth Theme Switching Transitions ── */
+body,
+.toolbar,
+.tabs-bar,
+.unified-panel,
+.ai-chat-panel,
+.theme-modal,
+.shortcuts-modal-content,
+.line-range-modal,
+.mobile-nav-pill,
+.dropdown-menu,
+.tab {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+/* ══════════════════════════════════════════════════
+   1. VS DARK (DEFAULT)
+   ══════════════════════════════════════════════════ */
+:root,
+:root[data-theme="vs-dark"],
+html[data-theme="vs-dark"],
+[data-theme="vs-dark"] {
+  color-scheme: dark;
+  --bg-primary: #1e1e1e;
+  --bg-secondary: #252526;
+  --bg-tertiary: #2d2d2d;
+  --bg-elevated: #333333;
+  --bg-hover: #37373d;
+
+  --border-primary: #3c3c3c;
+  --border-secondary: #474747;
+
+  --text-primary: #d4d4d4;
+  --text-secondary: #969696;
+  --text-tertiary: #6e6e6e;
+
+  --accent: #007acc;
+  --accent-hover: #0062a3;
+  --accent-subtle: rgba(0, 122, 204, 0.18);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.55);
+}
+
+/* ══════════════════════════════════════════════════
+   2. HIGH CONTRAST DARK
+   ══════════════════════════════════════════════════ */
+:root[data-theme="high-contrast-dark"],
+html[data-theme="high-contrast-dark"],
+[data-theme="high-contrast-dark"] {
+  color-scheme: dark;
+  --bg-primary: #000000;
+  --bg-secondary: #000000;
+  --bg-tertiary: #0a0a0a;
+  --bg-elevated: #111111;
+  --bg-hover: #1f1f1f;
+
+  --border-primary: #6fc3df;
+  --border-secondary: #ffffff;
+
+  --text-primary: #ffffff;
+  --text-secondary: #6fc3df;
+  --text-tertiary: #a0a0a0;
+
+  --accent: #f38518;
+  --accent-hover: #ffa033;
+  --accent-subtle: rgba(111, 195, 223, 0.2);
+
+  --shadow-sm: 0 0 0 1px #6fc3df;
+  --shadow-md: 0 0 0 2px #6fc3df;
+  --shadow-lg: 0 0 0 2px #ffffff;
+}
+
+/* ══════════════════════════════════════════════════
+   3. GITHUB DARK
+   ══════════════════════════════════════════════════ */
+:root[data-theme="github-dark"],
+html[data-theme="github-dark"],
+[data-theme="github-dark"] {
+  color-scheme: dark;
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --bg-elevated: #292e36;
+  --bg-hover: #30363d;
+
+  --border-primary: #30363d;
+  --border-secondary: #484f58;
+
+  --text-primary: #c9d1d9;
+  --text-secondary: #8b949e;
+  --text-tertiary: #6e7681;
+
+  --accent: #58a6ff;
+  --accent-hover: #1f6feb;
+  --accent-subtle: rgba(88, 166, 255, 0.16);
+
+  --shadow-sm: 0 1px 2px rgba(1, 4, 9, 0.5);
+  --shadow-md: 0 4px 12px rgba(1, 4, 9, 0.6);
+  --shadow-lg: 0 8px 24px rgba(1, 4, 9, 0.7);
+}
+
+/* ══════════════════════════════════════════════════
+   4. DRACULA
+   ══════════════════════════════════════════════════ */
+:root[data-theme="dracula"],
+html[data-theme="dracula"],
+[data-theme="dracula"] {
+  color-scheme: dark;
+  --bg-primary: #282a36;
+  --bg-secondary: #21222c;
+  --bg-tertiary: #1e1f29;
+  --bg-elevated: #343746;
+  --bg-hover: #44475a;
+
+  --border-primary: #44475a;
+  --border-secondary: #6272a4;
+
+  --text-primary: #f8f8f2;
+  --text-secondary: #9ea8c7;
+  --text-tertiary: #6272a4;
+
+  --accent: #bd93f9;
+  --accent-hover: #ff79c6;
+  --accent-subtle: rgba(189, 147, 249, 0.18);
+
+  --shadow-sm: 0 1px 2px rgba(10, 10, 15, 0.45);
+  --shadow-md: 0 4px 12px rgba(10, 10, 15, 0.55);
+  --shadow-lg: 0 8px 24px rgba(10, 10, 15, 0.7);
+}
+
+/* ══════════════════════════════════════════════════
+   5. NORD
+   ══════════════════════════════════════════════════ */
+:root[data-theme="nord"],
+html[data-theme="nord"],
+[data-theme="nord"] {
+  color-scheme: dark;
+  --bg-primary: #2e3440;
+  --bg-secondary: #242933;
+  --bg-tertiary: #3b4252;
+  --bg-elevated: #434c5e;
+  --bg-hover: #4c566a;
+
+  --border-primary: #3b4252;
+  --border-secondary: #4c566a;
+
+  --text-primary: #eceff4;
+  --text-secondary: #d8dee9;
+  --text-tertiary: #8892b0;
+
+  --accent: #88c0d0;
+  --accent-hover: #81a1c1;
+  --accent-subtle: rgba(136, 192, 208, 0.18);
+
+  --shadow-sm: 0 1px 2px rgba(20, 24, 30, 0.4);
+  --shadow-md: 0 4px 12px rgba(20, 24, 30, 0.5);
+  --shadow-lg: 0 8px 24px rgba(20, 24, 30, 0.65);
+}
+
+/* ══════════════════════════════════════════════════
+   6. NIGHT OWL
+   ══════════════════════════════════════════════════ */
+:root[data-theme="night-owl"],
+html[data-theme="night-owl"],
+[data-theme="night-owl"] {
+  color-scheme: dark;
+  --bg-primary: #011627;
+  --bg-secondary: #010e1a;
+  --bg-tertiary: #0b253a;
+  --bg-elevated: #0f334f;
+  --bg-hover: #1d3b53;
+
+  --border-primary: #122d42;
+  --border-secondary: #1d3b53;
+
+  --text-primary: #d6deeb;
+  --text-secondary: #80a4c2;
+  --text-tertiary: #5f7e97;
+
+  --accent: #82aaff;
+  --accent-hover: #5e81d1;
+  --accent-subtle: rgba(130, 170, 255, 0.18);
+
+  --shadow-sm: 0 1px 2px rgba(0, 8, 16, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 8, 16, 0.6);
+  --shadow-lg: 0 8px 24px rgba(0, 8, 16, 0.7);
+}
+
+/* ══════════════════════════════════════════════════
+   7. ONE DARK PRO
+   ══════════════════════════════════════════════════ */
+:root[data-theme="one-dark-pro"],
+html[data-theme="one-dark-pro"],
+[data-theme="one-dark-pro"] {
+  color-scheme: dark;
+  --bg-primary: #282c34;
+  --bg-secondary: #21252b;
+  --bg-tertiary: #1e2227;
+  --bg-elevated: #2c313a;
+  --bg-hover: #353b45;
+
+  --border-primary: #3e4451;
+  --border-secondary: #4b5263;
+
+  --text-primary: #abb2bf;
+  --text-secondary: #828997;
+  --text-tertiary: #5c6370;
+
+  --accent: #61afef;
+  --accent-hover: #4d8cd9;
+  --accent-subtle: rgba(97, 175, 239, 0.18);
+
+  --shadow-sm: 0 1px 2px rgba(15, 17, 21, 0.4);
+  --shadow-md: 0 4px 12px rgba(15, 17, 21, 0.5);
+  --shadow-lg: 0 8px 24px rgba(15, 17, 21, 0.65);
+}
+
+/* ══════════════════════════════════════════════════
+   8. MONOKAI
+   ══════════════════════════════════════════════════ */
+:root[data-theme="monokai"],
+html[data-theme="monokai"],
+[data-theme="monokai"] {
+  color-scheme: dark;
+  --bg-primary: #272822;
+  --bg-secondary: #1e1f1c;
+  --bg-tertiary: #171815;
+  --bg-elevated: #383830;
+  --bg-hover: #49483e;
+
+  --border-primary: #3e3d32;
+  --border-secondary: #49483e;
+
+  --text-primary: #f8f8f2;
+  --text-secondary: #a59f85;
+  --text-tertiary: #75715e;
+
+  --accent: #a6e22e;
+  --accent-hover: #8dc622;
+  --accent-subtle: rgba(166, 226, 46, 0.18);
+
+  --shadow-sm: 0 1px 2px rgba(10, 10, 9, 0.45);
+  --shadow-md: 0 4px 12px rgba(10, 10, 9, 0.55);
+  --shadow-lg: 0 8px 24px rgba(10, 10, 9, 0.7);
+}
+
+/* ══════════════════════════════════════════════════
+   9. SOLARIZED DARK
+   ══════════════════════════════════════════════════ */
+:root[data-theme="solarized-dark"],
+html[data-theme="solarized-dark"],
+[data-theme="solarized-dark"] {
+  color-scheme: dark;
+  --bg-primary: #002b36;
+  --bg-secondary: #00212b;
+  --bg-tertiary: #073642;
+  --bg-elevated: #0b4352;
+  --bg-hover: #0e5264;
+
+  --border-primary: #073642;
+  --border-secondary: #0d4e61;
+
+  --text-primary: #93a1a1;
+  --text-secondary: #839496;
+  --text-tertiary: #586e75;
+
+  --accent: #268bd2;
+  --accent-hover: #2aa198;
+  --accent-subtle: rgba(38, 139, 210, 0.18);
+
+  --shadow-sm: 0 1px 2px rgba(0, 15, 20, 0.45);
+  --shadow-md: 0 4px 12px rgba(0, 15, 20, 0.55);
+  --shadow-lg: 0 8px 24px rgba(0, 15, 20, 0.7);
+}
+
+/* ══════════════════════════════════════════════════
+   10. SYNTHWAVE '84
+   ══════════════════════════════════════════════════ */
+:root[data-theme="synthwave84"],
+html[data-theme="synthwave84"],
+[data-theme="synthwave84"] {
+  color-scheme: dark;
+  --bg-primary: #262335;
+  --bg-secondary: #1a1826;
+  --bg-tertiary: #201c2e;
+  --bg-elevated: #34294f;
+  --bg-hover: #493d6b;
+
+  --border-primary: #3b3254;
+  --border-secondary: #493d6b;
+
+  --text-primary: #f8f8f2;
+  --text-secondary: #b3a1d9;
+  --text-tertiary: #848bbd;
+
+  --accent: #ff7edb;
+  --accent-hover: #f92aad;
+  --accent-subtle: rgba(255, 126, 219, 0.22);
+
+  --shadow-sm: 0 1px 2px rgba(12, 10, 18, 0.45);
+  --shadow-md: 0 4px 12px rgba(12, 10, 18, 0.55);
+  --shadow-lg: 0 8px 24px rgba(12, 10, 18, 0.7);
+}
+
+/* ══════════════════════════════════════════════════
+   11. VS LIGHT
+   ══════════════════════════════════════════════════ */
+:root[data-theme="vs"],
+html[data-theme="vs"],
+[data-theme="vs"] {
+  color-scheme: light;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f3f3;
+  --bg-tertiary: #ececec;
+  --bg-elevated: #ffffff;
+  --bg-hover: #e5e5e5;
+
+  --border-primary: #e5e5e5;
+  --border-secondary: #cccccc;
+
+  --text-primary: #1e1e1e;
+  --text-secondary: #616161;
+  --text-tertiary: #8c8c8c;
+
+  --accent: #007acc;
+  --accent-hover: #0062a3;
+  --accent-subtle: rgba(0, 122, 204, 0.12);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+/* ══════════════════════════════════════════════════
+   12. HIGH CONTRAST LIGHT
+   ══════════════════════════════════════════════════ */
+:root[data-theme="high-contrast-light"],
+html[data-theme="high-contrast-light"],
+[data-theme="high-contrast-light"] {
+  color-scheme: light;
+  --bg-primary: #ffffff;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f5f5f5;
+  --bg-elevated: #ffffff;
+  --bg-hover: #e0e0e0;
+
+  --border-primary: #000000;
+  --border-secondary: #000000;
+
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --text-tertiary: #222222;
+
+  --accent: #0000ff;
+  --accent-hover: #0000cc;
+  --accent-subtle: rgba(0, 0, 255, 0.15);
+
+  --shadow-sm: 0 0 0 1px #000000;
+  --shadow-md: 0 0 0 2px #000000;
+  --shadow-lg: 0 0 0 3px #000000;
+}
+
+/* ══════════════════════════════════════════════════
+   13. GITHUB LIGHT
+   ══════════════════════════════════════════════════ */
+:root[data-theme="github-light"],
+html[data-theme="github-light"],
+[data-theme="github-light"] {
+  color-scheme: light;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-tertiary: #eaeef2;
+  --bg-elevated: #ffffff;
+  --bg-hover: #f3f4f6;
+
+  --border-primary: #d0d7de;
+  --border-secondary: #afb8c1;
+
+  --text-primary: #1f2328;
+  --text-secondary: #57606a;
+  --text-tertiary: #8c959f;
+
+  --accent: #0969da;
+  --accent-hover: #0550ae;
+  --accent-subtle: rgba(9, 105, 218, 0.12);
+
+  --shadow-sm: 0 1px 3px rgba(31, 35, 40, 0.08);
+  --shadow-md: 0 4px 12px rgba(31, 35, 40, 0.1);
+  --shadow-lg: 0 8px 24px rgba(31, 35, 40, 0.14);
+}
+
+/* ══════════════════════════════════════════════════
+   14. SOLARIZED LIGHT
+   ══════════════════════════════════════════════════ */
+:root[data-theme="solarized-light"],
+html[data-theme="solarized-light"],
+[data-theme="solarized-light"] {
+  color-scheme: light;
+  --bg-primary: #fdf6e3;
+  --bg-secondary: #eee8d5;
+  --bg-tertiary: #e4ddc8;
+  --bg-elevated: #fdf6e3;
+  --bg-hover: #ded7c2;
+
+  --border-primary: #d8d1be;
+  --border-secondary: #c8c1ae;
+
+  --text-primary: #586e75;
+  --text-secondary: #657b83;
+  --text-tertiary: #93a1a1;
+
+  --accent: #268bd2;
+  --accent-hover: #1a6099;
+  --accent-subtle: rgba(38, 139, 210, 0.14);
+
+  --shadow-sm: 0 1px 3px rgba(88, 110, 117, 0.1);
+  --shadow-md: 0 4px 12px rgba(88, 110, 117, 0.15);
+  --shadow-lg: 0 8px 24px rgba(88, 110, 117, 0.2);
+}

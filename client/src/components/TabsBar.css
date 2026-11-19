@@ -124,12 +124,12 @@
 
 .tab-close-btn:hover {
   opacity: 1 !important;
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--text-primary, #ffffff);
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .tab-close-btn:active {
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--border-secondary);
   transform: scale(0.92);
 }
 
