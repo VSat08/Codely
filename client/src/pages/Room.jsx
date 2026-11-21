@@ -61,6 +61,7 @@ function Room() {
   const [toasts, setToasts] = useState([]);
 
   useEffect(() => {
+    document.documentElement.removeAttribute('data-home-mode');
     document.documentElement.setAttribute('data-theme', editorTheme);
   }, [editorTheme]);
 
@@ -111,6 +112,7 @@ function Room() {
   });
 
   const [isPanelMaximized, setIsPanelMaximized] = useState(false);
+  const [previewRefreshTrigger, setPreviewRefreshTrigger] = useState(0);
   const [isCornerDragging, setIsCornerDragging] = useState(false);
   const cornerDragRef = useRef(null);
 
@@ -322,6 +324,7 @@ function Room() {
 
     if (mode === 'preview') {
       setActivePanel('preview');
+      setPreviewRefreshTrigger((prev) => prev + 1);
       return;
     }
 
@@ -532,6 +535,26 @@ function Room() {
           e.preventDefault();
           setShowThemeModal(prev => !prev);
           break;
+        case 'd': // Toggle Panel Dock (Bottom vs Right)
+          e.preventDefault();
+          if (!isMobileScreen) {
+            setPanelDock(prev => {
+              const next = prev === 'bottom' ? 'right' : 'bottom';
+              localStorage.setItem('codely-unified-panel-dock', next);
+              addToast(next === 'right' ? 'Docked panel to right' : 'Docked panel to bottom', 'info');
+              return next;
+            });
+          }
+          break;
+        case 'm': // Maximize / Restore Panel Size
+          e.preventDefault();
+          if (activePanel) {
+            setIsPanelMaximized(prev => !prev);
+          } else {
+            setActivePanel('terminal');
+            setIsPanelMaximized(true);
+          }
+          break;
         case '/': // Show Shortcuts
           e.preventDefault();
           setShowShortcuts(true);
@@ -670,6 +693,9 @@ function Room() {
                 problems={problems}
                 onNavigateToProblem={handleNavigateToProblem}
                 activeHtmlCode={room.ydocs?.[room.activeTabId]?.getText('monaco').toString() || room.activeTab?.code || ''}
+                activeTabId={room.activeTabId}
+                activeTabObj={room.activeTab}
+                previewTrigger={previewRefreshTrigger}
                 tabs={room.tabs}
                 ydocs={room.ydocs}
                 images={room.images}
@@ -711,6 +737,9 @@ function Room() {
               problems={problems}
               onNavigateToProblem={handleNavigateToProblem}
               activeHtmlCode={room.ydocs?.[room.activeTabId]?.getText('monaco').toString() || room.activeTab?.code || ''}
+              activeTabId={room.activeTabId}
+              activeTabObj={room.activeTab}
+              previewTrigger={previewRefreshTrigger}
               tabs={room.tabs}
               ydocs={room.ydocs}
               images={room.images}

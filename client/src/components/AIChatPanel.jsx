@@ -3,6 +3,7 @@ import { AIChatMessage, AIChatCodeActionsContext } from './AIChatMessage';
 import { AIChatSettings } from './AIChatSettings';
 import { ErrorBoundary } from './ErrorBoundary';
 import { ACCEPTED_IMAGE_TYPES, ACCEPTED_FILE_EXTENSIONS } from '../utils/constants';
+import { getTabFileIcon } from '../utils/fileIconHelper';
 import './AIChatPanel.css';
 
 const SUGGESTIONS = [
@@ -603,7 +604,9 @@ export function AIChatPanel({
           <div className="ai-attached-files-container">
             {attachedFiles.map((file, idx) => (
               <div key={idx} className="ai-attached-chip">
-                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>description</span>
+                <span className="tab-icon" aria-hidden="true">
+                  {getTabFileIcon(file.fileName, file.language)}
+                </span>
                 <span className="file-name">{file.fileName}</span>
                 <button className="btn btn-icon btn-ghost btn-small" onClick={() => removeAttachedFile(file.fileName)}>
                   <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>

@@ -2,6 +2,7 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { getTabFileIcon } from '../utils/fileIconHelper';
 
 const getInitials = (name) => {
   if (!name) return '?';
@@ -283,7 +284,9 @@ export function AIChatMessage({
           <div className="attached-code-badge-container">
             {message.attachedFiles.map((f, idx) => (
               <div key={`file-${idx}`} className="attached-code-badge">
-                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>code</span>
+                <span className="tab-icon" aria-hidden="true">
+                  {getTabFileIcon(f.fileName, f.language)}
+                </span>
                 <strong>{f.fileName || 'file'}</strong>
               </div>
             ))}

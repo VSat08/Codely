@@ -261,14 +261,15 @@ ${truncateCode(file.code)}
 
       try {
         if (provider === 'gemini') {
-          const key = apiKey || process.env.GEMINI_API_KEY;
+          const cleanClientKey = typeof apiKey === 'string' ? apiKey.trim() : '';
+          const key = cleanClientKey || (process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : '');
           if (!key) {
             socket.emit('ai-response-error', { requestId, error: 'Gemini API key is not configured. Please set GEMINI_API_KEY on the server or provide your own key in settings.' });
             return;
           }
 
           const genAI = new GoogleGenerativeAI(key);
-          const modelName = aiModel || (apiKey ? 'gemini-2.5-pro' : 'gemini-2.5-flash');
+          const modelName = aiModel || (cleanClientKey ? 'gemini-2.5-pro' : 'gemini-2.5-flash');
           const model = genAI.getGenerativeModel({
             model: modelName,
             systemInstruction: systemPrompt,
@@ -608,7 +609,9 @@ ${truncateCode(file.code)}
           friendlyError = 'The AI model is currently experiencing high demand. This is usually temporary — please try again in a few seconds.';
         } else if (status === 400) {
           if (error.message && (error.message.includes('API_KEY_INVALID') || error.message.includes('API key not valid'))) {
-            friendlyError = 'API key is invalid. Please check your API key in Settings.';
+            friendlyError = apiKey 
+              ? 'Your custom Gemini API key is invalid. Please update it in AI Settings (gear icon) or clear it to use Codely\'s free built-in AI.' 
+              : 'Server Gemini API key is invalid or not authorized. Please check GEMINI_API_KEY in server/.env.';
           } else {
             friendlyError = 'The request was invalid. The file might be too large or contain unsupported content.';
           }

@@ -71,6 +71,9 @@ export default function UnifiedPanel({
   onNavigateToProblem,
   // Preview Props
   activeHtmlCode,
+  activeTabId,
+  activeTabObj,
+  previewTrigger,
   tabs,
   ydocs,
   // Image Props
@@ -315,6 +318,49 @@ export default function UnifiedPanel({
     return PANEL_TABS.find((t) => t.id === activeTab) || PANEL_TABS[0];
   }, [activeTab, PANEL_TABS]);
 
+  // Trigger preview reload when Run is clicked on HTML/CSS files
+  useEffect(() => {
+    if (previewTrigger) {
+      setRefreshKey((k) => k + 1);
+    }
+  }, [previewTrigger]);
+
+  // Live Auto-Reload: Debounced live preview when editing HTML/CSS/JS files
+  useEffect(() => {
+    if (!ydocs || activeTab !== 'preview') return;
+
+    let debounceTimer = null;
+    const cleanups = [];
+
+    const handleYTextChange = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        setRefreshKey((k) => k + 1);
+      }, 400); // 400ms debounce
+    };
+
+    Object.entries(ydocs).forEach(([tabId, ydoc]) => {
+      try {
+        const ytext = ydoc?.getText('monaco');
+        if (ytext && typeof ytext.observe === 'function') {
+          ytext.observe(handleYTextChange);
+          cleanups.push(() => {
+            try {
+              ytext.unobserve(handleYTextChange);
+            } catch (e) {}
+          });
+        }
+      } catch (err) {
+        // Safe fallback
+      }
+    });
+
+    return () => {
+      clearTimeout(debounceTimer);
+      cleanups.forEach((cleanup) => cleanup());
+    };
+  }, [ydocs, tabs, activeTab]);
+
   // Combined Web Preview Source
   const combinedSrcDoc = useMemo(() => {
     let cssContent = '';
@@ -322,7 +368,7 @@ export default function UnifiedPanel({
 
     if (tabs) {
       Object.values(tabs).forEach((tab) => {
-        const code = ydocs?.[tab.id]?.getText('monaco').toString() || tab.code || '';
+        const code = ydocs?.[tab.id]?.getText('monaco')?.toString() || tab.code || '';
         if (tab.language === 'css' || tab.name?.endsWith('.css')) {
           cssContent += `\n/* ${tab.name} */\n${code}\n`;
         } else if (
@@ -334,7 +380,28 @@ export default function UnifiedPanel({
       });
     }
 
-    const baseHtml = activeHtmlCode || '<!DOCTYPE html><html><body><h3 style="font-family:sans-serif;color:#888;">Empty HTML file</h3></body></html>';
+    // Determine latest live HTML code directly from Yjs or activeTab:
+    let baseHtml = '';
+    // 1. If active tab is HTML, read its live text directly from ydocs
+    if (activeTabObj?.language === 'html' || activeTabObj?.name?.endsWith('.html')) {
+      const live = ydocs?.[activeTabId]?.getText('monaco')?.toString();
+      baseHtml = (live !== undefined && live !== null && live !== '') ? live : (activeTabObj?.code || '');
+    }
+    // 2. If not found, look for any HTML tab in the workspace
+    if (!baseHtml && tabs) {
+      for (const tab of Object.values(tabs)) {
+        if (tab.language === 'html' || tab.name?.endsWith('.html')) {
+          const live = ydocs?.[tab.id]?.getText('monaco')?.toString();
+          baseHtml = (live !== undefined && live !== null && live !== '') ? live : (tab.code || '');
+          if (baseHtml) break;
+        }
+      }
+    }
+    // 3. Fallback to activeHtmlCode prop or default empty placeholder
+    if (!baseHtml) {
+      baseHtml = activeHtmlCode || '<!DOCTYPE html><html><body><h3 style="font-family:sans-serif;color:#888;">Empty HTML file</h3></body></html>';
+    }
+
     let doc = baseHtml;
 
     if (cssContent.trim()) {
@@ -356,7 +423,7 @@ export default function UnifiedPanel({
     }
 
     return doc;
-  }, [activeHtmlCode, tabs, ydocs, refreshKey]);
+  }, [activeHtmlCode, activeTabId, activeTabObj, tabs, ydocs, refreshKey]);
 
   // Handle image upload
   const processAndUploadImage = useCallback(async (file) => {
@@ -923,50 +990,54 @@ export default function UnifiedPanel({
         {activeTab === 'preview' && (
           <div className="panel-view preview-view">
             <div className="preview-inner-toolbar">
-              <div className="preview-device-group">
-                <button
-                  type="button"
-                  className={`device-btn ${deviceSize === 'full' ? 'active' : ''}`}
-                  onClick={() => setDeviceSize('full')}
-                  title="Full Width"
-                >
-                  <span className="material-symbols-outlined">desktop_windows</span>
-                </button>
-                <button
-                  type="button"
-                  className={`device-btn ${deviceSize === 'tablet' ? 'active' : ''}`}
-                  onClick={() => setDeviceSize('tablet')}
-                  title="Tablet (768px)"
-                >
-                  <span className="material-symbols-outlined">tablet</span>
-                </button>
-                <button
-                  type="button"
-                  className={`device-btn ${deviceSize === 'mobile' ? 'active' : ''}`}
-                  onClick={() => setDeviceSize('mobile')}
-                  title="Mobile (375px)"
-                >
-                  <span className="material-symbols-outlined">smartphone</span>
-                </button>
-              </div>
+              <div className="preview-controls-pill">
+                <div className="preview-device-group">
+                  <button
+                    type="button"
+                    className={`device-btn ${deviceSize === 'full' ? 'active' : ''}`}
+                    onClick={() => setDeviceSize('full')}
+                    title="Full Width"
+                  >
+                    <span className="material-symbols-outlined">desktop_windows</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`device-btn ${deviceSize === 'tablet' ? 'active' : ''}`}
+                    onClick={() => setDeviceSize('tablet')}
+                    title="Tablet (768px)"
+                  >
+                    <span className="material-symbols-outlined">tablet</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`device-btn ${deviceSize === 'mobile' ? 'active' : ''}`}
+                    onClick={() => setDeviceSize('mobile')}
+                    title="Mobile (375px)"
+                  >
+                    <span className="material-symbols-outlined">smartphone</span>
+                  </button>
+                </div>
 
-              <div className="preview-toolbar-right">
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-icon panel-control-btn"
-                  onClick={() => setRefreshKey((k) => k + 1)}
-                  title="Reload Preview"
-                >
-                  <span className="material-symbols-outlined">refresh</span>
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-icon panel-control-btn"
-                  onClick={handleOpenPreviewExternal}
-                  title="Open in New Tab"
-                >
-                  <span className="material-symbols-outlined">open_in_new</span>
-                </button>
+                <span className="preview-pill-divider" />
+
+                <div className="preview-toolbar-right">
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-icon panel-control-btn"
+                    onClick={() => setRefreshKey((k) => k + 1)}
+                    title="Reload Preview"
+                  >
+                    <span className="material-symbols-outlined">refresh</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-icon panel-control-btn"
+                    onClick={handleOpenPreviewExternal}
+                    title="Open in New Tab"
+                  >
+                    <span className="material-symbols-outlined">open_in_new</span>
+                  </button>
+                </div>
               </div>
             </div>
 

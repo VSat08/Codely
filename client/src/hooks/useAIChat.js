@@ -118,7 +118,7 @@ export function useAIChat(socket, roomId, userName) {
     } catch { return { gemini: '', claude: '', openai: '' }; }
   });
 
-  const apiKey = apiKeys[provider] || '';
+  const apiKey = (apiKeys[provider] || '').trim();
 
   const setApiKey = (key) => {
     setApiKeys(prev => {

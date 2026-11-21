@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useSocket } from '../hooks/useSocket';
 import { LANGUAGES } from '../utils/constants';
@@ -8,6 +9,7 @@ function Home() {
   const navigate = useNavigate();
   const { socket, isConnected } = useSocket();
 
+  const [homeTheme, setHomeTheme] = useState(() => localStorage.getItem('codely-home-theme') || 'dark');
   const [joinId, setJoinId] = useState('');
   const [customId, setCustomId] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
@@ -22,6 +24,7 @@ function Home() {
   const currentProgress = useRef(0);
   const animationFrameId = useRef(null);
   const isLoopRunning = useRef(false);
+  const isTransitioningRef = useRef(false);
 
   // Apply only the transform (cheap, GPU-composited). Shadow is static in CSS.
   const applyMockupTransform = useCallback((p) => {
@@ -61,6 +64,77 @@ function Home() {
     const scrollTop = e.currentTarget.scrollTop;
     targetProgress.current = Math.min(Math.max(scrollTop / 400, 0), 1);
     ensureLoopRunning();
+  };
+
+  // Home landing page uses independent light/dark theme, isolated from editor themes
+  useEffect(() => {
+    const activeTheme = homeTheme === 'light' ? 'vs' : 'vs-dark';
+    document.documentElement.setAttribute('data-theme', activeTheme);
+    document.documentElement.setAttribute('data-home-mode', homeTheme);
+  }, [homeTheme]);
+
+  const toggleHomeTheme = (e) => {
+    if (isTransitioningRef.current) return;
+    const nextTheme = homeTheme === 'dark' ? 'light' : 'dark';
+
+    // Fallback for browsers without View Transitions API or if user prefers reduced motion
+    if (!document.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setHomeTheme(nextTheme);
+      localStorage.setItem('codely-home-theme', nextTheme);
+      return;
+    }
+
+    isTransitioningRef.current = true;
+
+    // Capture the click / button center coordinates
+    let x = window.innerWidth - 80;
+    let y = 30;
+    if (e) {
+      const rect = e.currentTarget?.getBoundingClientRect?.();
+      if (rect) {
+        x = rect.left + rect.width / 2;
+        y = rect.top + rect.height / 2;
+      } else if (e.clientX !== undefined && e.clientY !== undefined) {
+        x = e.clientX;
+        y = e.clientY;
+      }
+    }
+
+    // Calculate maximum radius to the furthest viewport corner
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
+    const transition = document.startViewTransition(() => {
+      flushSync(() => {
+        setHomeTheme(nextTheme);
+        localStorage.setItem('codely-home-theme', nextTheme);
+        const activeTheme = nextTheme === 'light' ? 'vs' : 'vs-dark';
+        document.documentElement.setAttribute('data-theme', activeTheme);
+        document.documentElement.setAttribute('data-home-mode', nextTheme);
+      });
+    });
+
+    transition.ready.then(() => {
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${endRadius}px at ${x}px ${y}px)`
+          ]
+        },
+        {
+          duration: 480,
+          easing: 'cubic-bezier(0.2, 0, 0, 1)',
+          pseudoElement: '::view-transition-new(root)'
+        }
+      );
+    });
+
+    transition.finished.finally(() => {
+      isTransitioningRef.current = false;
+    });
   };
 
   useEffect(() => {
@@ -151,9 +225,20 @@ function Home() {
             <button className="nav-link" onClick={() => scrollToId('features')}>Features</button>
             <button className="nav-link" onClick={() => scrollToId('how-it-works')}>How it works</button>
             <button className="nav-link" onClick={() => scrollToId('cta')}>Get started</button>
+            <button className="nav-link" onClick={() => navigate('/docs')}>Docs</button>
           </div>
 
           <div className="nav-right">
+            <button 
+              className="nav-theme-toggle" 
+              onClick={toggleHomeTheme}
+              title={`Switch to ${homeTheme === 'dark' ? 'light' : 'dark'} mode`}
+              aria-label="Toggle landing theme"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                {homeTheme === 'dark' ? 'light_mode' : 'dark_mode'}
+              </span>
+            </button>
             <div className="nav-status">
               <span className={`status-dot ${isConnected ? 'connected' : 'disconnected'}`} />
               <span className="nav-status-text">
@@ -337,13 +422,16 @@ function Home() {
             {/* Real tabs bar replica */}
             <div className="mockup-tabsbar">
               <div className="mk-tab active">
+                <i className="devicon-javascript-plain colored" style={{ fontSize: '13px', marginRight: '6px', flexShrink: 0 }} />
                 <span className="mk-tab-name">index.js</span>
                 <span className="material-symbols-outlined mk-tab-close">close</span>
               </div>
               <div className="mk-tab">
+                <i className="devicon-react-original colored" style={{ fontSize: '13px', marginRight: '6px', flexShrink: 0 }} />
                 <span className="mk-tab-name">App.jsx</span>
               </div>
               <div className="mk-tab mk-tab-hide">
+                <span style={{ color: '#38bdf8', fontFamily: 'monospace', fontWeight: 700, fontSize: '13px', marginRight: '6px', flexShrink: 0 }}>#</span>
                 <span className="mk-tab-name">styles.css</span>
               </div>
               <span className="material-symbols-outlined mk-tab-add">add</span>
@@ -394,11 +482,6 @@ function Home() {
           <div className="stat-item">
             <div className="stat-value">23+</div>
             <div className="stat-label">Languages</div>
-          </div>
-          <div className="stat-divider" />
-          <div className="stat-item">
-            <div className="stat-value">3</div>
-            <div className="stat-label">AI models</div>
           </div>
           <div className="stat-divider" />
           <div className="stat-item">
@@ -514,6 +597,17 @@ function Home() {
             </div>
           </div>
 
+          {/* Terminal & Live Web Preview */}
+          <div className="bento-card card-gradient-border">
+            <div className="bento-card-inner glass-panel">
+              <div className="bento-icon cyan-glow">
+                <span className="material-symbols-outlined">terminal</span>
+              </div>
+              <h3>Terminal &amp; Live Web Preview</h3>
+              <p>Execute code with instant output, catch errors with the Problems inspector, and preview HTML/CSS/JS live across desktop, tablet, and mobile viewports.</p>
+            </div>
+          </div>
+
         </section>
 
         {/* How it works */}
@@ -581,10 +675,11 @@ function Home() {
                 <button className="footer-link" onClick={handleCreateRoom}>Launch workspace</button>
               </div>
               <div className="footer-col">
-                <h5>Highlights</h5>
-                <span className="footer-link static">Real-time sync</span>
-                <span className="footer-link static">AI assistant</span>
-                <span className="footer-link static">File &amp; image sharing</span>
+                <h5>Resources</h5>
+                <button className="footer-link" onClick={() => navigate('/docs')}>Documentation</button>
+                <button className="footer-link" onClick={() => navigate('/docs/quickstart')}>Quickstart</button>
+                <button className="footer-link" onClick={() => navigate('/docs/shortcuts')}>Keyboard Shortcuts</button>
+                <button className="footer-link" onClick={() => navigate('/docs/architecture')}>Architecture &amp; Privacy</button>
               </div>
             </div>
           </div>

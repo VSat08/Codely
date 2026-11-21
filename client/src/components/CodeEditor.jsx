@@ -69,8 +69,8 @@ function CodeEditor({ ydoc, awareness, language, theme, tabId, problems, activeT
 
       if (e.altKey) {
         const key = e.browserEvent.key.toLowerCase();
-        // List of our global shortcut keys
-        if (['n', 'w', 'r', 'e', '1', '2', '3', '4', 't', '/', 'enter', 'j'].includes(key)) {
+        // List of our global shortcut keys (including panel dock, maximize, and tab navigation)
+        if (['n', 'w', 'r', 'e', '1', '2', '3', '4', 't', '/', 'enter', 'j', 'd', 'm', ',', '.'].includes(key)) {
           // Re-dispatch the event to the window so Room.jsx can catch it
           window.dispatchEvent(new KeyboardEvent('keydown', {
             key: e.browserEvent.key,

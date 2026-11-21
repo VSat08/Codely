@@ -43,13 +43,15 @@ function KeyboardShortcutsModal({ onClose }) {
       ]
     },
     {
-      group: 'Panels & Sidebars',
+      group: 'Panels & Layout',
       items: [
+        { desc: 'Toggle Panel Dock (Bottom / Right)', keys: [modKey, 'D'] },
+        { desc: 'Maximize / Restore Panel Size', keys: [modKey, 'M'] },
         { desc: 'Toggle Color Theme', keys: [modKey, 'T'] },
         { desc: 'Toggle Users Sidebar', keys: [modKey, '1'] },
-        { desc: 'Toggle Screenshots', keys: [modKey, '2'] },
-        { desc: 'Toggle Files', keys: [modKey, '3'] },
-        { desc: 'Toggle AI Assistant', keys: [modKey, '4'] },
+        { desc: 'Toggle Screenshots Drawer', keys: [modKey, '2'] },
+        { desc: 'Toggle Files Drawer', keys: [modKey, '3'] },
+        { desc: 'Toggle AI Assistant Panel', keys: [modKey, '4'] },
         { desc: 'Show Keyboard Shortcuts', keys: [modKey, '/'] },
       ]
     }

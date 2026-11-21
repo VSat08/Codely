@@ -1007,6 +1007,17 @@
 }
 
 /* Specific to Code Tabs */
+.ai-attached-chip .tab-icon,
+.attached-code-badge .tab-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
 .ai-attached-chip .file-name {
   color: var(--text-primary);
   font-weight: 500;
@@ -1225,8 +1236,7 @@
 
 .ai-input-wrapper:focus-within {
   border-color: var(--border-secondary);
-  background: var(--bg-hover);
-  box-shadow: var(--shadow-md);
+  box-shadow: none;
 }
 
 /* Textarea at the top */

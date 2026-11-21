@@ -28,6 +28,13 @@
   display: none; /* Chrome/Safari */
 }
 
+.tabs-empty-space {
+  flex: 1;
+  height: 100%;
+  min-width: 32px;
+  cursor: default;
+}
+
 .tab {
   display: flex;
   align-items: center;
@@ -67,6 +74,121 @@
 
 .tab-name {
   flex: 1;
+}
+
+.tab-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  user-select: none;
+  pointer-events: none;
+}
+
+.tab-icon-glyph {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-icon-seti {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  line-height: 1;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-icon-html {
+  color: #e44d26;
+  font-size: 0.72rem;
+  letter-spacing: -0.6px;
+}
+
+.tab-icon-css {
+  color: #38bdf8;
+  font-size: 0.84rem;
+}
+
+.tab-icon-json {
+  color: #f59e0b;
+  font-size: 0.72rem;
+  letter-spacing: -1px;
+}
+
+.tab-icon-rust {
+  color: #f97316;
+}
+
+.tab-icon-bash {
+  color: #22c55e;
+}
+
+.tab-icon-markdown {
+  color: var(--text-secondary);
+}
+
+.tab-icon-material {
+  font-size: 14px;
+  line-height: 1;
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-icon-sql {
+  color: #38bdf8;
+}
+
+.tab-icon-yaml {
+  color: #a855f7;
+}
+
+.tab-icon-xml {
+  color: #ec4899;
+}
+
+.tab-icon-txt {
+  color: var(--text-tertiary);
+}
+
+.tab-icon-svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  display: inline-flex;
+}
+
+.tab-icon-md {
+  color: #38bdf8;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.tab-icon-go {
+  color: #00add8;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.tab-close-icon {
+  font-size: 11px;
+  line-height: 1;
+  font-family: inherit;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tab-rename-input {

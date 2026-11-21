@@ -72,9 +72,9 @@ html[data-theme="high-contrast-dark"],
   --accent-hover: #ffa033;
   --accent-subtle: rgba(111, 195, 223, 0.2);
 
-  --shadow-sm: 0 0 0 1px #6fc3df;
-  --shadow-md: 0 0 0 2px #6fc3df;
-  --shadow-lg: 0 0 0 2px #ffffff;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.7);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.85);
+  --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.95);
 }
 
 /* ══════════════════════════════════════════════════
@@ -313,8 +313,11 @@ html[data-theme="synthwave84"],
    11. VS LIGHT
    ══════════════════════════════════════════════════ */
 :root[data-theme="vs"],
+:root[data-theme="vs-light"],
 html[data-theme="vs"],
-[data-theme="vs"] {
+html[data-theme="vs-light"],
+[data-theme="vs"],
+[data-theme="vs-light"] {
   color-scheme: light;
   --bg-primary: #ffffff;
   --bg-secondary: #f3f3f3;
@@ -362,9 +365,9 @@ html[data-theme="high-contrast-light"],
   --accent-hover: #0000cc;
   --accent-subtle: rgba(0, 0, 255, 0.15);
 
-  --shadow-sm: 0 0 0 1px #000000;
-  --shadow-md: 0 0 0 2px #000000;
-  --shadow-lg: 0 0 0 3px #000000;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 /* ══════════════════════════════════════════════════

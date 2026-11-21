@@ -59,7 +59,7 @@
   min-width: 0;
   word-break: break-word;
   overflow-wrap: anywhere;
-  color: #f1f5f9;
+  color: var(--text-primary);
   line-height: 1.4;
 }
 

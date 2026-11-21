@@ -1,181 +1,181 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/microsoft/monaco-editor/main/website/favicon.ico" width="80" alt="Codely Logo" />
-  <h1>Codely</h1>
-  <p><b>The Instant, Collaborative Web IDE with Real-Time Code Execution & Context-Aware AI</b></p>
-  
+  <br />
+  <h1>&lt;Codely /&gt;</h1>
+  <p><b>The Instant Collaborative Code Editor & AI Workspace for Modern Engineering Teams</b></p>
+
   <p>
-    <a href="#"><img src="https://img.shields.io/badge/Status-Active-brightgreen.svg?style=flat-square" alt="Status"></a>
-    <a href="#"><img src="https://img.shields.io/badge/Engine-Monaco%20Editor-blue.svg?style=flat-square" alt="Engine"></a>
-    <a href="#"><img src="https://img.shields.io/badge/Sync-Yjs%20CRDTs-orange.svg?style=flat-square" alt="Sync"></a>
-    <a href="#"><img src="https://img.shields.io/badge/AI-Gemini%20%7C%20GPT--4o%20%7C%20Claude%203.5-purple.svg?style=flat-square" alt="AI"></a>
-    <a href="#"><img src="https://img.shields.io/badge/License-Proprietary-red.svg?style=flat-square" alt="License"></a>
+    <a href="#"><img src="https://img.shields.io/badge/version-2.4.0-blue.svg?style=flat-square" alt="Version 2.4.0" /></a>
+    <a href="#"><img src="https://img.shields.io/badge/Engine-Monaco%20Editor-3b82f6.svg?style=flat-square" alt="Engine: Monaco" /></a>
+    <a href="#"><img src="https://img.shields.io/badge/Sync-Yjs%20CRDTs-f97316.svg?style=flat-square" alt="Sync: Yjs CRDTs" /></a>
+    <a href="#"><img src="https://img.shields.io/badge/AI-Gemini%20%7C%20GPT--4o%20%7C%20Claude%203.5-8b5cf6.svg?style=flat-square" alt="AI: Multi-Model" /></a>
+    <a href="#"><img src="https://img.shields.io/badge/Runtimes-23%2B%20Languages-10b981.svg?style=flat-square" alt="23+ Runtimes" /></a>
+    <a href="#"><img src="https://img.shields.io/badge/License-Proprietary-ef4444.svg?style=flat-square" alt="License: Proprietary" /></a>
   </p>
 
   <p>
-    Instant zero-install developer environment. Share a room link, code together in real-time,<br/>
-    execute code with an interactive terminal, and brainstorm with an AI assistant that understands your workspace.<br/>
+    Zero-install developer environment. Share a room link, collaborate in real-time with sub-millisecond CRDT sync,<br />
+    execute code with an interactive streaming terminal, preview web layouts across responsive viewports,<br />
+    and brainstorm with a context-aware AI partner that understands your workspace.<br />
     <b>No signup. No configuration. Pure flow state.</b>
   </p>
+  <br />
 </div>
 
 ---
 
-## ⚡ Executive Summary
+## ⚡ What is Codely?
 
-Traditional developer tools require accounts, environment setups, dependency installs, and subscription walls before you can write or run a single line of code. **Codely eliminates the entire friction curve.**
+Traditional developer tools require accounts, environment setups, dependency installs, and subscription walls before writing or running a single line of code. **Codely eliminates the entire friction curve.**
 
-In **under two seconds**, developers can spin up a fully functioning cloud IDE session with multi-tab file management, sub-millisecond CRDT multi-user sync, a server-backed interactive execution terminal, an interactive browser preview sandbox, and a deep context-aware AI assistant.
+In **under two seconds**, developers can launch a fully functional cloud IDE session featuring:
+- **Multi-Tab File Management** with dynamic VS Code Seti & Devicon file icons
+- **Sub-millisecond CRDT Multi-User Sync** with live colored collaborator cursors
+- **Server-Backed Interactive Terminal** supporting `stdin`, `stdout`, `stderr`, and runtime interrupts
+- **Sandboxed Live Web Preview** with responsive viewports (Desktop, Tablet, Mobile)
+- **Deep Context-Aware AI Copilot** with tab drag-and-drop context attachment and one-click code diffing
+- **Built-In Developer Documentation Portal (`/docs`)** with global `Ctrl+K` Deep Search
 
-Whether you're conducting technical interviews, pair-programming with teammates, debugging algorithms with students, or prototyping full-stack ideas on the fly, Codely delivers a desktop-grade IDE experience straight to the browser.
+Whether conducting technical interviews, pair-programming remotely, troubleshooting algorithms with students, or prototyping full-stack ideas on the fly, Codely delivers a desktop-grade IDE experience straight into the browser.
 
 ---
 
-## 🚀 Core Product Capabilities
+## 🚀 Core Product Features
 
 ```
-┌───────────────────────────────────────────────────────────────────────────────┐
-│                                CODELY WORKSPACE                               │
-├──────────────────────────────────────┬────────────────────────────────────────┤
-│           MONACO CODE EDITOR         │             CODELY AI (COPILOT)        │
-│  • Multi-tab editing (23+ languages) │  • Drag & drop tabs as context         │
-│  • Yjs Conflict-Free sync (CRDTs)    │  • Clipboard image & document paste    │
-│  • Multi-user cursors & live presence│  • One-click code diff & apply         │
-│  • 14 Handcrafted editor themes      │  • Multi-provider (Gemini, GPT, Claude)│
-├──────────────────────────────────────┴────────────────────────────────────────┤
-│                       UNIFIED SYSTEM PANEL (DOCKABLE)                         │
-│  [ >_ Terminal ]  [ ! Problems ]  [ 🌐 Preview ]  [ 🖼 Screenshots ]  [ 📁 Files ]│
-│  • Interactive stdin / stdout / stderr   • Multi-device responsive view       │
-│  • Clickable stack trace diagnostics     • Bi-directional live process stream │
-└───────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                CODELY WORKSPACE                                 │
+├───────────────────────────────────────┬─────────────────────────────────────────┤
+│          MONACO CODE EDITOR           │            CODELY AI (COPILOT)          │
+│  • Multi-tab editing (23+ runtimes)   │  • Drag & drop tabs as prompt context   │
+│  • Yjs Conflict-Free sync (CRDTs)     │  • Clipboard image & document paste     │
+│  • Dynamic Seti & Devicon file icons  │  • One-click code diff & live patch     │
+│  • 14 Curated Dark & Light themes     │  • Multi-provider (Gemini, GPT, Claude) │
+├───────────────────────────────────────┴─────────────────────────────────────────┤
+│                        UNIFIED SYSTEM PANEL (DOCKABLE)                          │
+│   [ >_ Terminal ]   [ ! Problems ]   [ 🌐 Preview ]   [ 🖼 Images ]   [ 📁 Files ]│
+│  • Bi-directional stdin/stdout stream    • Multi-device responsive switcher     │
+│  • Clickable stack trace diagnostics     • Dual-axis & 2D corner sash resizing  │
+└─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ### 1. 🔓 Zero-Friction Instant Workspaces
-* **No Accounts or Logins:** Never forced to sign up, input credit cards, or verify emails.
-* **Instant Provisioning:** Navigate to any URL path (e.g. `codely.app/room-name`) to instantly create or join a collaborative session.
-* **Custom Identity:** Every participant receives a distinct cursor color and default handle (`user-xxxx`) which can be renamed anytime and persists in local storage.
-* **Ephemeral Architecture:** Rooms run in high-performance in-memory cache and automatically clean up after inactivity, keeping your data confidential.
+* **No Sign-Up Required**: Instant access with zero accounts, credit cards, or email verifications.
+* **Instant URL Provisioning**: Navigate to any room path (e.g., `codely.app/room-id`) to instantly generate or join a shared session.
+* **Ephemeral Architecture**: Sessions operate entirely in volatile in-memory state and automatically clean up after inactivity, keeping project data confidential.
+* **Custom Identity**: Each collaborator receives a distinct cursor color and avatar badge that persists in local storage.
 
 ---
 
 ### 2. ⚡ Real-Time Collaborative Engine (Yjs CRDTs)
-* **Conflict-Free Replicated Data Types:** Simultaneous edits on identical lines merge deterministically with zero data loss or race conditions.
-* **Live Remote Carets:** See collaborator cursor movements, selections, and name pills in real-time.
-* **Binary Chunked WebSockets:** Large documents and high-frequency keystroke bursts are packed into compressed binary diffs over WebSockets for minimum bandwidth overhead.
-* **Automatic Resync:** Reconnection events compute state-vector differences and seamlessly catch up missed changes in both directions.
+* **Conflict-Free Replicated Data Types**: Edits merge deterministically without merge conflicts or race conditions.
+* **Live Remote Carets**: Real-time cursor tracking, text selections, and user labels.
+* **Binary Compressed WebSockets**: State vectors and keystroke diffs transmit as compact binary chunks for minimum latency and bandwidth overhead.
+* **Automatic Reconnection & Resync**: Seamlessly recalculates missing state vectors on network drops without losing edits.
 
 ---
 
-### 3. 💻 Interactive Execution Terminal
-* **Multi-Language Runner:** Execute Python, JavaScript (Node.js), TypeScript, C, C++, Java, Rust, Go, Bash, and more with dedicated process isolation.
-* **True Interactive Bi-Directional Streaming:** Full interactive console supporting runtime input (`stdin`), outputs (`stdout`), standard errors (`stderr`), and keyboard interrupts (`Ctrl+C` / SIGINT).
-* **Precise Execution Metrics:** Track execution start time, duration in milliseconds, memory state, and exit status badges.
-* **Terminal Management:** Instant clear output, stop execution controls, and dedicated keyboard shortcuts.
+### 3. 🎨 IDE-Grade Editor Tabs & Dynamic File Icons
+* **Exact Seti / Modern IDE Icon System**:
+  - `</>` in orange for HTML (`.html`, `.htm`) matching VS Code Seti style.
+  - `#` in sky-blue for CSS and SCSS (`.css`, `.scss`).
+  - `JS` in yellow for JavaScript (`.js`, `.mjs`, `.cjs`).
+  - `⚛` in cyan for React JSX and TSX (`.jsx`, `.tsx`).
+  - `TS` in blue for TypeScript (`.ts`).
+  - Python snake logo for Python (`.py`).
+  - `{ }` in amber for JSON (`.json`).
+  - `M↓` in blue/slate for Markdown (`.md`).
+  - Plus Rust, Go, Bash, SQL, Docker, C, C++, Java, and plaintext icons.
+* **Real-Time Dynamic Icon Morphing**: Icons update in real time as you rename tabs (e.g. typing `App.jsx` immediately morphs the icon into the React atom).
+* **Flicker-Free Close Buttons**: Crisp Unicode `✕` close controls with zero font-loading lag.
 
 ---
 
-### 4. 🌐 Live Web Preview & Responsive Sandbox
-* **Instant HTML/CSS/JS Rendering:** Build web applications and UI prototypes with instant rendering inside an isolated client sandbox.
-* **Multi-Device Viewport Toggles:** Instantly preview your web layout across Desktop, Tablet (768px), and Mobile (375px) responsive breakpoints.
-* **Pop-Out Capability:** Open the running web preview in a clean standalone browser tab for dual-screen development.
-* **Console Sync:** Web preview runtime logs and exceptions forward cleanly to the console.
+### 4. 💻 Interactive Execution Terminal
+* **Multi-Language Runner**: Run Python, Node.js (JavaScript), TypeScript, C, C++, Java, Rust, Go, Bash, and more with process isolation.
+* **Interactive Bi-Directional Streaming**: Full console supporting runtime user input (`stdin`), standard output (`stdout`), error streams (`stderr`), and keyboard interrupts (`Ctrl+C` / SIGINT).
+* **Execution Telemetry**: Live execution duration timers, memory usage stats, and process exit status badges.
+* **Quick Keyboard Trigger**: Execute any runnable file instantly with `Alt + Enter` (or `Ctrl + Enter`).
 
 ---
 
-### 5. 🔍 Automated Error & Diagnostic Parser (Problems View)
-* **Intelligent Stack Trace Parsing:** Built-in regex engine parses raw compiler and runtime errors from Python, Node.js, GCC, Clang, Rust, and Java.
-* **One-Click Navigation:** Click any parsed error in the Problems tab to jump straight to the exact file, line, and column in the Monaco editor.
-* **Severity Filtering:** Filter diagnostics by Errors, Warnings, and Info with clear file badges.
+### 5. 🌐 Live Web Preview & Responsive Sandbox
+* **Instant HTML/CSS/JS Sandbox**: Isolated client-side execution container with auto-refresh on save or tab switch.
+* **Responsive Viewport Switcher**: Switch instantly between **Desktop (100%)**, **Tablet (768px frame)**, and **Mobile (375px frame)**.
+* **Pop-Out Preview Mode**: Open the sandbox in an independent browser window for multi-monitor workflows.
+* **Runtime Console Bridge**: Captures preview exceptions and `console.log` output directly into the workspace console.
 
 ---
 
 ### 6. 🧠 Context-Aware AI Copilot
-* **Multi-Model Support:** 
-  * Integrated **Google Gemini** free tier with fair rate limiting.
-  * **BYOK (Bring Your Own Key)** support for **OpenAI (GPT-4o)**, **Anthropic (Claude 3.5 Sonnet)**, and **Google Gemini Pro**.
-* **Drag-and-Drop Tab Attachment:** Grab any editor tab from the top bar and drop it directly into the AI prompt to attach that file's live code as prompt context.
-* **Clipboard (Ctrl+V) File & Screenshot Ingestion:** Paste screenshots, terminal errors, PDFs, CSVs, or text documents directly into the chat prompt.
-* **Smart Code Integration:**
-  * **Apply to active file:** Replaces or patches code directly into your current editor tab.
-  * **Insert into new tab:** Automatically opens an untitled file with the AI's generated code and language mode pre-configured.
-* **Private vs. Shared Modes:** Switch between room-wide shared brainstorming or confidential private AI prompts with one click.
-* **Modern Antigravity/Cursor Card Interface:** Spacious multi-line input canvas, circular context attachment buttons, and instant bottom-pinned opening without disorienting scroll animations.
+* **Multi-Model Intelligence**: Built-in Google Gemini, plus BYOK (Bring Your Own Key) support for OpenAI (GPT-4o), Anthropic (Claude 3.5 Sonnet), and Gemini Pro.
+* **Drag-and-Drop Tab Attachment**: Drag any file tab directly into the chat prompt to attach live code as analytical context.
+* **Visual Attachment Parity**: Attached file chips in the AI prompt and message history display their matching file/language icons.
+* **Clipboard (Ctrl+V) Image & File Ingestion**: Paste mockups, error screenshots, PDFs, or CSVs directly into the chat.
+* **One-Click Code Application**: Apply AI-suggested code directly to the active tab or open it in a new editor tab with syntax detection.
 
 ---
 
-### 7. 🗂️ Advanced Layout & Docking Architecture
-* **Unified IDE Panel:** Dock Terminal, Problems, Preview, Images, and Files to the **Bottom** or **Right** of your workspace.
-* **Dual-Axis Sash Resizing:** Resize bottom and side panels independently with smooth mouse/touch dragging, plus a **2D Corner Sash** to adjust both dimensions simultaneously.
-* **Maximize & Minimize:** Expand any panel to full workspace view with a single click or double-click on the header.
-* **Full Mobile Optimization:** 
-  * Full-bleed mobile editor with zero bottom cutoff bands.
-  * Floating glassmorphic navigation pill (`Run`, `Console`, `Images`, `Files`, `AI`, `Users`, `More`) with backdrop blur.
-  * Touch-friendly drawer drag handles and swipe-to-dismiss bottom sheets.
+### 7. 🗂️ Unified Dockable Panel & Multi-Axis Sashes
+* **Dock Bottom or Right**: Toggle the unified panel between Bottom dock (ideal for terminal logs) and Right dock (ideal for web preview).
+* **Dual-Axis & 2D Corner Drag Handles**: Adjust width and height simultaneously with smooth drag interactions.
+* **One-Click Maximize / Restore**: Expand any panel to full workspace view with a single click or header double-click.
 
 ---
 
-### 8. 🎨 Handcrafted Themes & Monaco Customization
-* **14 Curated IDE Themes:**
-  * *Dark Themes:* VS Code Dark, GitHub Dark, Dracula, Nord, One Dark Pro, Night Owl, Monokai, SynthWave '84, Solarized Dark.
-  * *Light Themes:* VS Code Light, GitHub Light, Solarized Light.
-  * *High Contrast:* High Contrast Dark, High Contrast Light.
-* **Typography:** Pre-configured with **JetBrains Mono**, smooth cursor animations, font ligatures, line highlights, and customizable tab spaces.
-
----
-
-### 9. 📦 Asset Sharing & Workspace Export
-* **Drag & Drop Media Sharing:** Upload screenshots and mockups with an integrated fullscreen lightbox viewer.
-* **Document Sharing:** Share text files, CSVs, logs, and PDFs up to 10 files per session.
-* **ZIP Workspace Export:** Download your entire multi-tab project packaged cleanly into a `.zip` archive.
-* **Line Range Extraction:** Extract, copy, or share specific line numbers with preserved syntax styling.
+### 8. 📖 Premier Developer Documentation (`/docs`)
+* **10 Exhaustive Reference Guides**: Comprehensive documentation covering Quickstart, Architecture, CRDT Sync, AI Copilot, Web Preview, Terminal Execution, Shortcuts, and 23+ Language Runtimes.
+* **Command Palette Deep Search (`Ctrl+K` / `⌘+K`)**: Modal search indexing titles, descriptions, subtitles, TOC sections, and article bodies.
+* **Google Antigravity-Style Announcement Bar**: Persistent, full-width announcement strip with dynamic sticky header height adaptation.
+* **Interactive Code Frames**: Realistic Monaco editor illustration frames with dark and light theme fidelity.
 
 ---
 
 ## ⌨️ Productivity Keyboard Shortcuts
 
-Codely supports cross-platform shortcuts (`Cmd` on macOS, `Ctrl` on Windows & Linux):
+Codely features cross-platform shortcuts (`⌃ Control` on macOS, `Alt` on Windows & Linux):
 
-| Shortcut | Action | Description |
-| :--- | :--- | :--- |
-| `Mod + N` | **New Tab** | Creates a new code tab |
-| `Mod + W` | **Close Tab** | Closes the currently active tab |
-| `Mod + E` | **Rename Tab** | Triggers inline filename and extension rename |
-| `Mod + Enter` | **Run Code** | Executes code in the interactive terminal |
-| `Mod + T` | **Theme Modal** | Opens the 14-theme live picker |
-| `Mod + J` | **Toggle Console** | Opens / closes the bottom Terminal panel |
-| `Mod + P` | **Toggle Preview** | Opens / closes the Live Web Preview |
-| `Mod + L` | **Line Range** | Opens the line range selector and extractor |
-| `Mod + 1` | **Room Users** | Toggles the active collaborator drawer |
-| `Mod + 2` | **Screenshots** | Toggles the shared screenshots panel |
-| `Mod + 3` | **Shared Files** | Toggles the document and file sharing panel |
-| `Mod + 4` | **Codely AI** | Toggles the AI assistant sidebar |
-| `Mod + /` | **Help & Shortcuts** | Displays the keyboard shortcuts cheat sheet |
+| Shortcut (Win/Linux) | Shortcut (macOS) | Action | Description |
+| :--- | :--- | :--- | :--- |
+| `Alt + Enter` | `⌃ + Enter` | **Run Code** | Executes code in the interactive streaming terminal |
+| `Alt + J` | `⌃ + J` | **Toggle Terminal** | Opens / closes the bottom Terminal panel |
+| `Alt + N` | `⌃ + N` | **New Tab** | Creates a new editor file tab |
+| `Alt + W` | `⌃ + W` | **Close Tab** | Closes the currently active tab |
+| `Alt + Shift + W` | `⌃ + ⇧ + W` | **Close Other Tabs** | Closes all tabs except the active one |
+| `Alt + E` | `⌃ + E` | **Rename Tab** | Initiates inline tab renaming |
+| `Alt + D` | `⌃ + D` | **Toggle Dock** | Toggles panel dock between Bottom and Right |
+| `Alt + M` | `⌃ + M` | **Maximize Panel** | Toggles maximize / restore on the active panel |
+| `Alt + T` | `⌃ + T` | **Theme Selector** | Opens the 14-theme live picker modal |
+| `Alt + 1` | `⌃ + 1` | **Room Users** | Toggles collaborator users drawer |
+| `Alt + 2` | `⌃ + 2` | **Screenshots** | Toggles shared screenshots panel |
+| `Alt + 3` | `⌃ + 3` | **Shared Files** | Toggles shared documents and files drawer |
+| `Alt + 4` | `⌃ + 4` | **Codely AI** | Toggles AI assistant sidebar |
+| `Alt + /` | `⌃ + /` | **Shortcuts** | Opens the keyboard shortcuts cheat sheet |
+| `Ctrl + K` | `⌘ + K` | **Deep Search** | Opens Documentation Command Palette |
 
 ---
 
 ## 🛡️ Privacy & Security Architecture
 
-Privacy is engineered into Codely's foundational design:
-
-1. **No Database Persistence:** Code is never stored to disk or a database. Rooms live exclusively in volatile RAM. When a room is closed or reaches inactivity, all associated memory is permanently freed.
-2. **Client-Side Key Isolation (BYOK):** Custom API keys (OpenAI, Anthropic, Gemini) are stored strictly within the user's browser `sessionStorage`. They are never logged or stored on the server and are only passed as transient headers for authorized API calls.
-3. **Prompt Injection Sanitization:** System prompts instruct AI models to treat workspace code strictly as passive analytical context, insulating the assistant against arbitrary injected instructions.
-4. **Network & Payload Defense:** WebSocket message payloads are strictly limited to prevent buffer flooding, and execution commands run inside throttled sandbox boundaries.
+1. **Zero Database Retention**: Code lives strictly in volatile memory. When a room closes or reaches inactivity, all memory is permanently wiped.
+2. **Client-Side Key Isolation (BYOK)**: Custom AI API keys (OpenAI, Anthropic, Gemini) are stored strictly in client `sessionStorage` and are never persisted to a database or server logs.
+3. **Sandbox Process Containment**: Terminal execution runs with timeout guards, buffer limits, and strict process termination.
+4. **Binary Wire Compression**: Real-time collaboration operates via compact binary CRDT diffs, preventing raw code exposure in generic network logs.
 
 ---
 
 ## 🛠️ Technology Stack
 
-* **Frontend:** React 18, Vite 5, Monaco Editor, Lucide & Material Symbols
-* **Collaboration & CRDTs:** Yjs, y-monaco, Socket.io Client
-* **Backend:** Node.js, Express, Socket.io
-* **Code Execution Engine:** Child Process Process Manager with stream buffering, timeout guards, and signal handlers
-* **AI Engine:** Multi-provider streaming adapter (Google Gemini API, OpenAI API, Anthropic API)
+* **Frontend**: React 18, Vite 5, Monaco Editor, Lucide & Devicon
+* **Real-Time Collaboration**: Yjs (CRDTs), `y-monaco`, Socket.io Client
+* **Backend**: Node.js, Express, Socket.io
+* **Code Execution Engine**: Child Process streaming runner with buffered I/O and process guards
+* **AI Engine**: Streaming adapter supporting Google Gemini, OpenAI (GPT-4o), and Anthropic (Claude 3.5 Sonnet)
 
 ---
 
-## 🚦 Getting Started (Local Development)
+## 🚦 Quickstart (Local Development)
 
 ### Prerequisites
 * **Node.js** (v18.0.0 or higher recommended)
@@ -183,34 +183,38 @@ Privacy is engineered into Codely's foundational design:
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-org/codely.git
+git clone https://github.com/your-username/codely.git
 cd codely
 ```
 
 ### 2. Install dependencies
 ```bash
-# Install root, client, and server dependencies
-npm install
-npm --prefix client install
-npm --prefix server install
+# Installs root, client, and server dependencies in one command
+npm run install:all
 ```
 
-### 3. Configure environment variables
-Create a `.env` file in the `server` directory (refer to `.env.example`):
+### 3. Configure environment variables (optional)
+Create a `.env` file in the `server` directory (optional):
 ```env
+# Optional: Server port (defaults to 3001)
 PORT=3001
-CLIENT_URL=http://localhost:5173
-# Optional: Default Google Gemini API key for free tier AI access
+
+# Optional: Default Google Gemini API key for built-in free tier AI assistant
 GEMINI_API_KEY=your_gemini_api_key_here
+
+# Optional: Custom Judge0 API endpoint for remote code execution (defaults to https://ce.judge0.com)
+CODE_RUNNER_API_URL=https://ce.judge0.com
 ```
 
-### 4. Run development servers
+> **Note**: Users can also supply their own API keys (OpenAI, Anthropic Claude, or Google Gemini) directly in the web app under AI Settings via client-side BYOK.
+
+### 4. Start development servers
 ```bash
-# Start backend server and Vite frontend concurrently
+# Starts the backend server (port 3001) and Vite frontend (port 5173) concurrently
 npm run dev
 ```
 
-Visit `http://localhost:5173` in your browser.
+Open `http://localhost:5173` in your browser.
 
 ---
 
@@ -223,5 +227,5 @@ This software and associated documentation files are proprietary and confidentia
 ---
 
 <div align="center">
-  <sub>Engineered for seamless collaboration and developer velocity.</sub>
+  <sub>Engineered for seamless collaboration, developer velocity, and pure flow state.</sub>
 </div>

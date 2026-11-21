@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import './TabsBar.css';
 import { getExtensionForLanguage } from '../utils/constants';
+import { getTabFileIcon } from '../utils/fileIconHelper';
 
 function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabRename }) {
   const [editingTabId, setEditingTabId] = useState(null);
@@ -10,6 +11,7 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
   const activeTabRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const isAddingRef = useRef(false);
 
   useEffect(() => {
     if (editingTabId && inputRef.current) {
@@ -79,11 +81,13 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
     if (name && name !== tabs[editingTabId].name) {
       const ext = name.split('.').pop()?.toLowerCase();
       const reverseMap = {
-        js: 'javascript', ts: 'typescript', py: 'python', html: 'html',
-        css: 'css', json: 'json', md: 'markdown', java: 'java', c: 'c',
+        js: 'javascript', jsx: 'javascript', ts: 'typescript', tsx: 'typescript',
+        py: 'python', html: 'html', htm: 'html', css: 'css', scss: 'css',
+        json: 'json', md: 'markdown', java: 'java', c: 'c',
         cpp: 'cpp', cs: 'csharp', go: 'go', rs: 'rust', sql: 'sql',
         rb: 'ruby', php: 'php', swift: 'swift', kt: 'kotlin',
-        dart: 'dart', sh: 'shell', txt: 'plaintext', xml: 'xml', yaml: 'yaml', dockerfile: 'dockerfile'
+        dart: 'dart', sh: 'shell', bash: 'shell', txt: 'plaintext',
+        xml: 'xml', yaml: 'yaml', yml: 'yaml', dockerfile: 'dockerfile'
       };
       const language = reverseMap[ext] || tabs[editingTabId].language;
       try {
@@ -96,13 +100,21 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
   };
 
   const handleAdd = async () => {
+    if (isAddingRef.current) return;
+    isAddingRef.current = true;
     const defaultLanguage = 'javascript';
     const defaultName = `Untitled-${Object.keys(tabs).length + 1}.${getExtensionForLanguage(defaultLanguage)}`;
     try {
       const newTab = await onTabAdd(defaultName, defaultLanguage);
-      onTabChange(newTab.id);
+      if (newTab?.id) {
+        onTabChange(newTab.id);
+      }
     } catch (e) {
       console.error('Failed to add tab', e);
+    } finally {
+      setTimeout(() => {
+        isAddingRef.current = false;
+      }, 250);
     }
   };
 
@@ -123,6 +135,18 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
 
   const tabCount = Object.keys(tabs).length;
 
+  const handleEmptyBarDoubleClick = (e) => {
+    // Only trigger if double-clicking directly on the empty background area,
+    // not on an individual tab or action button (tab double-click is reserved for rename)
+    if (
+      e.target === containerRef.current ||
+      e.target.classList.contains('tabs-empty-space')
+    ) {
+      e.stopPropagation();
+      handleAdd();
+    }
+  };
+
   return (
     <div className={`tabs-bar ${canScrollLeft ? 'has-scroll-left' : ''} ${canScrollRight ? 'has-scroll-right' : ''}`}>
       {/* Scroll left arrow (visible when overflowing) */}
@@ -136,7 +160,11 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
         </button>
       )}
 
-      <div className="tabs-container" ref={containerRef}>
+      <div 
+        className="tabs-container" 
+        ref={containerRef}
+        onDoubleClick={handleEmptyBarDoubleClick}
+      >
         {Object.values(tabs).map((tab) => {
           const isActive = tab.id === activeTabId;
           const isEditing = tab.id === editingTabId;
@@ -164,6 +192,10 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
               onDoubleClick={(e) => handleStartEdit(tab, e)}
               title={tab.name ? `${tab.name} • Drag to AI Chat to attach` : 'Double click to rename • Drag to AI Chat to attach'}
             >
+              <span className="tab-icon" aria-hidden="true">
+                {getTabFileIcon(isEditing ? editName : tab.name, tab.language)}
+              </span>
+
               {isEditing ? (
                 <input
                   ref={inputRef}
@@ -192,12 +224,17 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
                   draggable={false}
                   onDragStart={(e) => e.stopPropagation()}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>close</span>
+                  <span className="tab-close-icon" aria-hidden="true">✕</span>
                 </button>
               )}
             </div>
           );
         })}
+        {/* Empty space that fills the rest of the tab container for easy double-click new file */}
+        <div
+          className="tabs-empty-space"
+          title="Double-click to create new file"
+        />
       </div>
 
       {/* Scroll right arrow (visible when overflowing) */}
@@ -214,7 +251,12 @@ function TabsBar({ tabs, activeTabId, onTabChange, onTabAdd, onTabDelete, onTabR
       {/* Tab count badge on mobile when overflowing */}
       <span className="tabs-count-badge" title={`${tabCount} tabs open`}>{tabCount}</span>
 
-      <button className="btn btn-icon btn-ghost tab-add-btn" onClick={handleAdd} title="Add new file">
+      <button
+        className="btn btn-icon btn-ghost tab-add-btn"
+        onClick={handleAdd}
+        onDoubleClick={(e) => e.stopPropagation()}
+        title="Add new file (Alt+N)"
+      >
         <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add</span>
       </button>
     </div>
